@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges" role="img" aria-label="ZALTURI">
+  <rect width="32" height="32" fill="#1a1209"/>
+  <g fill="#d4a843">
+    <rect x="4" y="5" width="24" height="4"/>
+    <rect x="20" y="9" width="4" height="4"/>
+    <rect x="16" y="13" width="4" height="4"/>
+    <rect x="12" y="17" width="4" height="4"/>
+    <rect x="8" y="21" width="4" height="4"/>
+    <rect x="4" y="23" width="24" height="4"/>
+  </g>
+  <rect x="4" y="5" width="4" height="4" fill="#c0440a"/>
+  <rect x="24" y="23" width="4" height="4" fill="#c0440a"/>
+</svg>

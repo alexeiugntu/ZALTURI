@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>ZALTURI Runner — free endless runner game online | ZALTURI Arcade</title>
+<meta name="description" content="Play ZALTURI Runner free in your browser — a one-button endless runner in 8-bit CRT pixel art. Jump and duck through a scrolling wasteland that speeds up until it eats you. No install, no ads.">
+<link rel="canonical" href="https://zalturi.com/arcade/runner/">
+<meta name="theme-color" content="#1a1209">
+<meta name="robots" content="index, follow, max-image-preview:large">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ZALTURI">
+<meta property="og:title" content="ZALTURI Runner — free endless runner game">
+<meta property="og:description" content="One button, infinite punishment. Jump and duck through a pixel wasteland. Free 8-bit browser game.">
+<meta property="og:url" content="https://zalturi.com/arcade/runner/">
+<meta property="og:image" content="https://zalturi.com/assets/img/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ZALTURI Runner — free endless runner game">
+<meta name="twitter:description" content="One button, infinite punishment. Free 8-bit browser game.">
+<meta name="twitter:image" content="https://zalturi.com/assets/img/og.png">
+
+<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/assets/img/favicon.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+
+<link rel="preload" href="/assets/fonts/press-start-2p.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/vt323.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/css/base.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://zalturi.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Arcade", "item": "https://zalturi.com/arcade/" },
+        { "@type": "ListItem", "position": 3, "name": "Runner", "item": "https://zalturi.com/arcade/runner/" }
+      ]
+    },
+    {
+      "@type": "VideoGame",
+      "name": "ZALTURI Runner",
+      "url": "https://zalturi.com/arcade/runner/",
+      "description": "Free one-button endless runner in 8-bit CRT pixel art. Jump and duck past obstacles in a wasteland that keeps speeding up.",
+      "applicationCategory": "Game",
+      "genre": "Endless runner",
+      "gamePlatform": "Web browser",
+      "operatingSystem": "Any",
+      "author": { "@type": "MusicGroup", "name": "ZALTURI", "url": "https://zalturi.com/" },
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+    }
+  ]
+}
+</script>
+
+<style>
+
+  :root {
+    --metal-1: #2e2210;
+    --metal-2: #1a1209;
+    --metal-edge: #050302;
+    --red: #c0440a;
+    --red-dark: #7a2a06;
+    --yellow: #d4a843;
+    --bezel: #050302;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  .rn-stage {
+    display: flex; flex-direction: column; align-items: center;
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    user-select: none; -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation; color: #e8e8e8;
+  }
+
+  .visually-hidden {
+    position: absolute; width: 1px; height: 1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  }
+
+  /* ---- console body ---- */
+  .console {
+    width: 680px;
+    max-width: 100%;
+    background: linear-gradient(180deg, var(--metal-1) 0%, var(--metal-2) 100%);
+    border: 2px solid var(--metal-edge);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow:
+      0 18px 40px rgba(0,0,0,.6),
+      inset 0 2px 0 rgba(255,255,255,.08),
+      inset 0 -4px 0 rgba(0,0,0,.5);
+    position: relative;
+  }
+  /* red accent stripe */
+  .console::before {
+    content: "";
+    position: absolute;
+    left: 16px; right: 16px; top: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--red-dark), var(--red), var(--yellow), var(--red), var(--red-dark));
+    border-radius: 0 0 4px 4px;
+  }
+
+  /* ---- brand bar ---- */
+  .brand {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding: 0 2px;
+  }
+  .rn-logo {
+    font-size: 20px;
+    letter-spacing: 2px;
+    color: var(--red);
+    text-shadow:
+       1px 1px 0 #000,
+       2px 2px 0 #000,
+       3px 3px 0 var(--red-dark),
+       4px 4px 0 #000;
+    line-height: 1.3;
+  }
+  .rn-logo small {
+    display: block;
+    font-size: 8px;
+    letter-spacing: 3px;
+    color: var(--yellow);
+    text-shadow: 1px 1px 0 #000;
+    margin-top: 6px;
+  }
+  #sound {
+    background: var(--metal-edge);
+    border: 2px solid #000;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    color: #fff;
+    padding: 8px 10px;
+    line-height: 1;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.06), 0 2px 0 #000;
+  }
+  #sound:active { transform: translateY(1px); }
+
+  /* ---- CRT bezel + screen ---- */
+  .bezel {
+    background: var(--bezel);
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow:
+      inset 0 0 0 2px #000,
+      inset 0 6px 16px rgba(0,0,0,.8),
+      0 2px 0 rgba(255,255,255,.04);
+  }
+  #wrap {
+    position: relative;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: inset 0 0 24px rgba(0,0,0,.55);
+  }
+  #rn-root canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+    image-rendering: pixelated;
+  }
+  /* static CRT scanlines + vignette (no animation) */
+  .scanlines {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 1px, transparent 1px 3px),
+      radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,.35) 100%);
+    mix-blend-mode: multiply;
+  }
+
+  /* ---- overlay ---- */
+  #overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-align: center;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity .35s ease;
+    z-index: 2;
+    text-shadow: 2px 2px 0 #000;
+    padding: 10px;
+  }
+  #overlay .ovh { font-size: 16px; color: var(--yellow); line-height: 1.4; }
+  #overlay .score-big { font-size: 16px; color: #fff; margin-top: 14px; }
+  #overlay p { margin-top: 12px; font-size: 9px; line-height: 1.9; color: #d8d8d8; }
+  #overlay.hidden { opacity: 0; }
+
+  /* ---- gamepad buttons ---- */
+  #touch {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 14px;
+    padding: 0 6px;
+  }
+  body.touch #touch { display: flex; }
+  .pad-label { font-size: 8px; color: #9aa0a6; letter-spacing: 1px; }
+  .btns { display: flex; gap: 18px; }
+  #touch button {
+    width: 74px; height: 74px;
+    border-radius: 50%;
+    font-family: inherit;
+    font-size: 20px;
+    color: #fff;
+    background: radial-gradient(circle at 38% 32%, #ef5347, var(--red) 45%, var(--red-dark) 100%);
+    border: 3px solid #000;
+    border-bottom-width: 7px;
+    box-shadow: 0 3px 0 #000, inset 0 2px 3px rgba(255,255,255,.3);
+    cursor: pointer;
+    text-shadow: 1px 1px 0 #000;
+  }
+  #touch button:active { transform: translateY(3px); border-bottom-width: 4px; box-shadow: 0 1px 0 #000; }
+  #touch button small { display:block; font-size: 7px; margin-top: 4px; color: var(--yellow); }
+
+  /* ---- footer hint ---- */
+  .hint {
+    margin-top: 14px;
+    font-size: 8px;
+    line-height: 1.8;
+    color: #6f757b;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+
+  @media (max-width: 480px) {
+    .rn-logo { font-size: 15px; }
+    #touch button { width: 64px; height: 64px; font-size: 17px; }
+  }
+
+</style>
+</head>
+
+<body class="crt">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="wrap nav">
+  <a class="logo" href="/">ZALTURI</a>
+  <nav class="menu" aria-label="Primary">
+    <a href="/#listen">Listen</a>
+    <a href="https://disk.yandex.ru/d/LQxYDO_lA7LHRQ" target="_blank" rel="noopener">Download</a>
+    <a href="/about/">Manifesto</a>
+    <a href="/arcade/" aria-current="page">Arcade</a>
+  </nav>
+</header>
+
+<main id="main">
+  <nav class="wrap crumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/arcade/">Arcade</a> / Runner</nav>
+  <div class="wrap game-wrap">
+    <div class="game-head">
+      <div>
+        <h1 class="h-title" style="font-size:clamp(24px,5vw,44px)">ZALTURI Runner</h1>
+        <p class="eyebrow" style="margin-top:10px">free endless runner · one button · pixel art</p>
+      </div>
+      <a class="btn btn-ghost" href="/arcade/">← Back to arcade</a>
+    </div>
+
+    <div id="rn-root">
+      <div class="rn-stage">
+<div class="console">
+    <div class="brand">
+      <div class="rn-logo">ZALTURI<small>RUNNER</small></div>
+      <button id="sound" title="Sound on/off" aria-label="Toggle sound">🔊</button>
+    </div>
+
+    <div class="bezel">
+      <div id="wrap">
+        <canvas id="game" width="640" height="200" role="img"
+                aria-label="Game field: the runner jumps and ducks past obstacles"></canvas>
+        <div class="scanlines"></div>
+        <div id="overlay">
+          <div class="ovh">★ ZALTURI RUNNER ★</div>
+          <p>SPACE / ↑ / TAP — JUMP<br>↓ — DUCK</p>
+          <p>PRESS TO START</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="touch">
+      <div class="pad-label">D&nbsp;PAD</div>
+      <div class="btns">
+        <button id="btnDuck" aria-label="Duck">↓<small>DOWN</small></button>
+        <button id="btnJump" aria-label="Jump">↑<small>JUMP</small></button>
+      </div>
+    </div>
+  </div>
+
+  <p class="hint">PRESS START &nbsp;·&nbsp; SPACE / ↑ — JUMP &nbsp;·&nbsp; ↓ — DUCK</p>
+      </div>
+    </div>
+
+    <div class="prose" style="margin-top:30px">
+      <p>One button, infinite punishment. Jump and duck through a scrolling pixel wasteland that keeps accelerating — day flips to night, the birds show up, and sooner or later it eats you. The only goal is to beat your own best.</p>
+      <p class="eyebrow">Controls — space / ↑ / tap to jump · ↓ to duck. Your high score is saved on this device. Free, no install, no ads.</p>
+    </div>
+  </div>
+</main>
+
+<footer class="wrap footer">
+  ZALTURI / noface project / music save us
+  <div class="row">
+    <a href="https://soundcloud.com/zalturi" target="_blank" rel="noopener">SoundCloud</a> ·
+    <a href="/arcade/">Arcade</a> ·
+    <a href="/about/">Manifesto</a> ·
+    <a href="/">Home</a>
+  </div>
+</footer>
+
+<script>
+(function(){
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const overlay = document.getElementById('overlay');
+const soundBtn = document.getElementById('sound');
+
+const W = canvas.width, H = canvas.height;
+const GROUND_Y = H - 30;
+const GRAVITY = 0.6;
+
+// Contra/NES jungle palette — day (NES blue sky) / night (dark jungle)
+const THEMES = {
+  day:   { bg: '#1a1209', fg: '#e8c56a', dim: '#5a4a2a', cloud: '#2e2210', ground: '#0c0804', far: '#3d2e14' },
+  night: { bg: '#0a0703', fg: '#d4a843', dim: '#3d2e14', cloud: '#1a1209', ground: '#050302', far: '#241a0c' }
+};
+const START_LIVES = 3;
+let night = false;
+function theme() { return night ? THEMES.night : THEMES.day; }
+
+let best = +localStorage.getItem('dinoBest') || 0;
+let muted = localStorage.getItem('dinoMuted') === '1';
+soundBtn.textContent = muted ? '🔇' : '🔊';
+
+const dino = { x: 50, y: GROUND_Y, w: 44, h: 47, vy: 0, onGround: true, ducking: false };
+
+let obstacles = [], clouds = [];
+let speed, score, spawnTimer, cloudTimer, legFrame;
+let running = false, gameOver = false;
+let lastThemeScore = 0;
+let deathFlash = 0;
+let paused = false;
+let lives, invincible, bgScroll;
+
+/* ---------- audio ---------- */
+let actx = null;
+function ensureAudio() {
+  if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){} }
+}
+function beep(freq, dur, type = 'square', vol = 0.05) {
+  if (muted || !actx) return;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.value = vol;
+  o.connect(g); g.connect(actx.destination);
+  const t = actx.currentTime;
+  o.start(t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.stop(t + dur);
+}
+const sJump  = () => beep(660, 0.12, 'square', 0.04);
+const sPoint = () => beep(880, 0.08, 'sine', 0.05);
+const sHit   = () => { beep(330, 0.12, 'square', 0.06); setTimeout(() => beep(220, 0.12, 'square', 0.05), 70); };
+const sDie   = () => { beep(200, 0.3, 'sawtooth', 0.06); setTimeout(() => beep(120, 0.4, 'sawtooth', 0.06), 90); };
+
+soundBtn.addEventListener('click', () => {
+  muted = !muted;
+  localStorage.setItem('dinoMuted', muted ? '1' : '0');
+  soundBtn.textContent = muted ? '🔇' : '🔊';
+  if (!muted) { ensureAudio(); sPoint(); }
+});
+
+/* ---------- game ---------- */
+function reset() {
+  obstacles = []; clouds = [];
+  speed = 6; score = 0; spawnTimer = 0; cloudTimer = 80;
+  legFrame = 0; lastThemeScore = 0; deathFlash = 0;
+  lives = START_LIVES; invincible = 0; bgScroll = 0;
+  night = false;
+  dino.y = GROUND_Y; dino.vy = 0; dino.onGround = true; dino.ducking = false;
+  gameOver = false;
+}
+
+function start() {
+  if (running) return;
+  ensureAudio();
+  if (actx && actx.state === 'suspended') actx.resume();
+  reset();
+  running = true;
+  overlay.classList.add('hidden');
+  loop();
+}
+
+function jump() {
+  if (dino.onGround) { dino.vy = -11; dino.onGround = false; sJump(); }
+}
+
+function spawnObstacle() {
+  const isBird = score > 400 && Math.random() < 0.25;
+  if (isBird) {
+    const heights = [GROUND_Y - 50, GROUND_Y - 25, GROUND_Y - 5];
+    obstacles.push({ type: 'bird', x: W + 20, y: heights[Math.floor(Math.random()*heights.length)], w: 38, h: 26 });
+  } else {
+    const sizes = [{ w: 17, h: 35 }, { w: 25, h: 50 }, { w: 45, h: 35 }];
+    const s = sizes[Math.floor(Math.random()*sizes.length)];
+    obstacles.push({ type: 'cactus', x: W + 20, y: GROUND_Y, w: s.w, h: s.h });
+  }
+}
+
+function rectsOverlap(a, b) {
+  return a.x < b.x + b.w && a.x + a.w > b.x && a.y - a.h < b.y && a.y > b.y - b.h;
+}
+
+function update() {
+  const prevScore = Math.floor(score);
+  score += 0.15 * (speed / 6);
+  speed += 0.0015;
+
+  if (Math.floor(score / 100) > Math.floor(prevScore / 100) && prevScore > 0) sPoint();
+
+  if (Math.floor(score) - lastThemeScore >= 700) {
+    lastThemeScore = Math.floor(score);
+    night = !night;
+  }
+
+  bgScroll += speed * 0.3;
+  if (invincible > 0) invincible--;
+
+  dino.vy += GRAVITY;
+  dino.y += dino.vy;
+  if (dino.y >= GROUND_Y) { dino.y = GROUND_Y; dino.vy = 0; dino.onGround = true; }
+
+  spawnTimer--;
+  if (spawnTimer <= 0) {
+    spawnObstacle();
+    spawnTimer = Math.max(45, 110 - score * 0.02) + Math.random() * 50;
+  }
+  cloudTimer--;
+  if (cloudTimer <= 0) { clouds.push({ x: W + 20, y: 20 + Math.random()*70 }); cloudTimer = 120 + Math.random()*200; }
+
+  obstacles.forEach(o => o.x -= speed);
+  clouds.forEach(c => c.x -= speed * 0.4);
+  obstacles = obstacles.filter(o => o.x + o.w > -10);
+  clouds = clouds.filter(c => c.x > -60);
+
+  const box = {
+    x: dino.x + 4,
+    y: dino.y,
+    w: (dino.ducking ? 56 : dino.w) - 8,
+    h: dino.ducking ? 26 : dino.h
+  };
+  if (invincible <= 0) {
+    for (const o of obstacles) {
+      if (rectsOverlap(box, o)) {
+        lives--;
+        if (lives <= 0) { endGame(); return; }
+        invincible = 90;   // ~1.5s of blinking grace
+        deathFlash = 8;
+        sHit();
+        break;
+      }
+    }
+  }
+  legFrame = (legFrame + 1) % 12;
+}
+
+function endGame() {
+  running = false;
+  gameOver = true;
+  deathFlash = 8;
+  sDie();
+  if (Math.floor(score) > best) {
+    best = Math.floor(score);
+    localStorage.setItem('dinoBest', best);
+  }
+  let frames = 0;
+  (function flash() {
+    draw();
+    frames++;
+    if (frames < 18) requestAnimationFrame(flash);
+    else showOverlay();
+  })();
+}
+
+function showOverlay() {
+  overlay.innerHTML =
+    '<div class="ovh">GAME OVER</div>' +
+    '<div class="score-big">SCORE ' + Math.floor(score) + '</div>' +
+    '<p>HI-SCORE ' + best + '</p>' +
+    '<p>PRESS TO PLAY AGAIN</p>';
+  overlay.classList.remove('hidden');
+}
+
+function draw() {
+  const t = theme();
+  ctx.fillStyle = t.bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // parallax jungle silhouettes (behind everything)
+  drawTrees(t);
+
+  // ground band (jungle dirt)
+  ctx.fillStyle = t.ground;
+  ctx.fillRect(0, GROUND_Y + 2, W, H - GROUND_Y);
+  ctx.strokeStyle = t.fg;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, GROUND_Y + 1); ctx.lineTo(W, GROUND_Y + 1); ctx.stroke();
+
+  // clouds
+  ctx.fillStyle = t.cloud;
+  clouds.forEach(c => {
+    ctx.beginPath();
+    ctx.ellipse(c.x, c.y, 22, 9, 0, 0, Math.PI*2);
+    ctx.ellipse(c.x + 14, c.y - 4, 14, 8, 0, 0, Math.PI*2);
+    ctx.fill();
+  });
+
+  // dino — blink while invincible after a hit
+  const blinkHidden = invincible > 0 && Math.floor(invincible / 5) % 2 === 0;
+  const dinoColor = (deathFlash > 0 && Math.floor(deathFlash) % 2 === 0) ? '#e0520d' : t.fg;
+  ctx.fillStyle = dinoColor;
+  if (blinkHidden) {
+    // skip drawing this frame
+  } else if (dino.ducking && dino.onGround) {
+    ctx.fillRect(dino.x, dino.y - 24, 50, 22);
+    ctx.fillRect(dino.x + 40, dino.y - 30, 16, 14);
+    ctx.fillStyle = t.bg;
+    ctx.fillRect(dino.x + 50, dino.y - 27, 3, 3);
+  } else {
+    const x = dino.x, y = dino.y;
+    ctx.fillRect(x - 6, y - 30, 10, 8);
+    ctx.fillRect(x, y - 30, 22, 26);
+    ctx.fillRect(x + 18, y - 47, 24, 20);
+    ctx.fillRect(x + 40, y - 33, 6, 4);
+    ctx.fillStyle = t.bg;
+    ctx.fillRect(x + 34, y - 43, 4, 4);
+    ctx.fillStyle = dinoColor;
+    if (dino.onGround) {
+      if (legFrame < 6) { ctx.fillRect(x+2,y-6,7,6); ctx.fillRect(x+14,y-4,7,4); }
+      else { ctx.fillRect(x+2,y-4,7,4); ctx.fillRect(x+14,y-6,7,6); }
+    } else {
+      ctx.fillRect(x+2,y-6,7,6); ctx.fillRect(x+14,y-6,7,6);
+    }
+    ctx.fillRect(x + 20, y - 18, 6, 4);
+  }
+  if (deathFlash > 0) deathFlash -= 0.5;
+
+  // obstacles
+  obstacles.forEach(o => {
+    ctx.fillStyle = t.fg;
+    if (o.type === 'cactus') {
+      ctx.fillRect(o.x + o.w/2 - 4, o.y - o.h, 8, o.h);
+      ctx.fillRect(o.x, o.y - o.h*0.6, 6, 4);
+      ctx.fillRect(o.x, o.y - o.h*0.6, 4, o.h*0.4);
+      ctx.fillRect(o.x + o.w - 6, o.y - o.h*0.7, 6, 4);
+      ctx.fillRect(o.x + o.w - 4, o.y - o.h*0.7, 4, o.h*0.5);
+    } else {
+      const flapUp = Math.floor(Date.now()/200) % 2 === 0;
+      const by = o.y - o.h;
+      ctx.fillRect(o.x + 8, by + 8, 24, 6);
+      ctx.fillRect(o.x + 28, by + 6, 8, 5);
+      if (flapUp) ctx.fillRect(o.x, by, 18, 6);
+      else ctx.fillRect(o.x, by + 14, 18, 6);
+    }
+  });
+
+  // HUD score: HI dimmed, current bright (NES style)
+  ctx.font = '16px "Press Start 2P", "Courier New", monospace';
+  ctx.textBaseline = 'top';
+  ctx.textAlign = 'right';
+  const cur = String(Math.floor(score||0)).padStart(5, '0');
+  ctx.fillStyle = t.fg;
+  ctx.fillText(cur, W - 10, 10);
+  const curW = ctx.measureText(cur).width;
+  ctx.fillStyle = t.dim;
+  ctx.fillText('HI ' + String(best).padStart(5, '0') + '  ', W - 16 - curW, 10);
+  ctx.textAlign = 'left';
+
+  // lives (Contra-style mini dino heads, top-left)
+  drawLives(t);
+}
+
+// distant palm/jungle silhouettes scrolling slower than the ground
+function drawPalm(x, baseY) {
+  const top = baseY - 56;
+  ctx.fillRect(x - 3, top, 6, 56);                 // trunk
+  ctx.fillRect(x - 18, top - 2, 18, 5);            // fronds
+  ctx.fillRect(x, top - 2, 18, 5);
+  ctx.fillRect(x - 13, top - 9, 13, 5);
+  ctx.fillRect(x, top - 9, 13, 5);
+  ctx.fillRect(x - 6, top - 14, 12, 6);            // crown
+}
+function drawTrees(t) {
+  ctx.fillStyle = t.far;
+  const spacing = 175;
+  const off = bgScroll % spacing;
+  for (let i = -1; i * spacing < W + spacing; i++) {
+    drawPalm(i * spacing - off + 60, GROUND_Y + 4);
+  }
+}
+function drawLives(t) {
+  for (let i = 0; i < lives; i++) {
+    const x = 12 + i * 22, y = 12;
+    ctx.fillStyle = t.fg;
+    ctx.fillRect(x, y, 14, 11);       // head
+    ctx.fillRect(x + 12, y + 3, 4, 3); // snout
+    ctx.fillStyle = t.bg;
+    ctx.fillRect(x + 9, y + 2, 3, 3);  // eye
+  }
+}
+
+function loop() {
+  if (running) { update(); if (!running) return; draw(); requestAnimationFrame(loop); }
+}
+
+/* ---------- input ---------- */
+function pressJump() {
+  if (paused) { paused = false; running = true; overlay.classList.add('hidden'); loop(); return; }
+  if (!running) { start(); return; }
+  jump();
+}
+function duckOn()  { dino.ducking = true; if (running && !dino.onGround) dino.vy += 3; }
+function duckOff() { dino.ducking = false; }
+
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); pressJump(); }
+  else if (e.code === 'ArrowDown') { e.preventDefault(); duckOn(); }
+});
+document.addEventListener('keyup', e => { if (e.code === 'ArrowDown') duckOff(); });
+
+canvas.addEventListener('pointerdown', e => { e.preventDefault(); pressJump(); });
+
+const btnJump = document.getElementById('btnJump');
+const btnDuck = document.getElementById('btnDuck');
+btnJump.addEventListener('pointerdown', e => { e.preventDefault(); pressJump(); });
+btnDuck.addEventListener('pointerdown', e => { e.preventDefault(); duckOn(); });
+btnDuck.addEventListener('pointerup',   e => { e.preventDefault(); duckOff(); });
+btnDuck.addEventListener('pointerleave', duckOff);
+btnDuck.addEventListener('pointercancel', duckOff);
+
+if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+  document.body.classList.add('touch');
+}
+
+// pause when tab hidden
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && running) {
+    running = false;
+    paused = true;
+    overlay.innerHTML = '<div class="ovh">PAUSE</div><p>COME BACK &amp; TAP<br>TO RESUME</p>';
+    overlay.classList.remove('hidden');
+  }
+});
+
+draw();
+
+})();
+</script>
+</body>
+</html>
