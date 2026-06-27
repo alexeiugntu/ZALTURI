@@ -1,0 +1,11 @@
+# OS / editor junk
+.DS_Store
+**/.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# never commit node stuff (this is a no-build static site)
+node_modules/
+npm-debug.log*

@@ -1,0 +1,2329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Free Online Audio Analyzer — LUFS, True Peak, Key &amp; Spectrum | ZALTURI</title>
+<meta name="description" content="Analyze any track in your browser — integrated / short-term / momentary LUFS, True Peak (dBTP), dynamic range, musical key (Camelot), tempo, waveform, spectrum and spectrogram. Nothing is uploaded; everything runs locally. Free.">
+<link rel="canonical" href="https://zalturi.com/tools/analyzer/">
+<meta name="theme-color" content="#1a1209">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="keywords" content="audio analyzer, LUFS meter online, true peak, dBTP, loudness, dynamic range, key detection, camelot wheel, BPM, spectrum, spectrogram, mastering, free, in browser">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ZALTURI">
+<meta property="og:title" content="Free Online Audio Analyzer — LUFS, True Peak, Key &amp; Spectrum">
+<meta property="og:description" content="Drop a track and get LUFS, True Peak, dynamics, key, tempo, spectrum and spectrogram — 100% in your browser, nothing uploaded.">
+<meta property="og:url" content="https://zalturi.com/tools/analyzer/">
+<meta property="og:image" content="https://zalturi.com/assets/img/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Free Online Audio Analyzer — LUFS, True Peak, Key &amp; Spectrum">
+<meta name="twitter:description" content="LUFS, True Peak, key, tempo, spectrum &amp; spectrogram — free, in your browser, nothing uploaded.">
+<meta name="twitter:image" content="https://zalturi.com/assets/img/og.png">
+
+<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/assets/img/favicon.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+
+<link rel="preload" href="/assets/fonts/press-start-2p.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/vt323.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/css/base.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://zalturi.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Tools", "item": "https://zalturi.com/tools/analyzer/" },
+        { "@type": "ListItem", "position": 3, "name": "Audio analyzer", "item": "https://zalturi.com/tools/analyzer/" }
+      ]
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "ZALTURI Audio Analyzer",
+      "url": "https://zalturi.com/tools/analyzer/",
+      "applicationCategory": "MultimediaApplication",
+      "operatingSystem": "Any (web browser)",
+      "description": "In-browser audio analyzer: LUFS (integrated, short-term, momentary), True Peak (dBTP), dynamic range, musical key with Camelot wheel, tempo, genre, waveform, spectrum and spectrogram. Files are never uploaded.",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "featureList": ["Integrated / short-term / momentary LUFS", "True Peak (dBTP) with clipping detection", "Dynamic range", "Key detection and Camelot wheel", "Tempo grid / BPM", "Average spectrum and spectrogram", "A/B track comparison", "PNG / PDF report"]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "Does my file get uploaded to a server?", "acceptedAnswer": { "@type": "Answer", "text": "No. The whole analysis runs locally in your browser with the Web Audio API and WebAssembly. Your audio file never leaves your device." } },
+        { "@type": "Question", "name": "How is LUFS different from dBFS?", "acceptedAnswer": { "@type": "Answer", "text": "dBFS is the peak level of the loudest sample. LUFS is perceived loudness — it accounts for time and the frequency sensitivity of human hearing. Two tracks with the same dBFS peak can sound noticeably different in LUFS." } },
+        { "@type": "Question", "name": "Which formats are supported?", "acceptedAnswer": { "@type": "Answer", "text": "WAV, FLAC, MP3, AAC/M4A, OGG, OPUS and AIFF — anything your browser can decode." } },
+        { "@type": "Question", "name": "How accurate are the measurements?", "acceptedAnswer": { "@type": "Answer", "text": "Loudness follows ITU-R BS.1770-4 / EBU R128. True Peak uses oversampling. Results match professional meters closely; tiny differences can come from decoder and resampling." } }
+      ]
+    }
+  ]
+}
+</script>
+
+<style>
+  /* ---- zalturi flavour over the analyzer chrome (engine draws the graphs) ---- */
+  #fiollo-audio-analyzer {
+    border: 3px solid var(--z-border) !important;
+    box-shadow: 6px 6px 0 #000, 0 0 0 2px rgba(212,168,67,0.1) inset, 0 0 34px rgba(192,68,10,0.18) !important;
+    border-radius: 0 !important;
+  }
+  #fiollo-audio-analyzer .faa-title {
+    font-family: var(--font-pixel) !important;
+    font-size: 13px !important; line-height: 1.5 !important; letter-spacing: 0.03em !important;
+    color: var(--z-gold) !important; text-shadow: 2px 2px 0 var(--z-rust) !important;
+  }
+  #fiollo-audio-analyzer .faa-sec-h {
+    font-family: var(--font-pixel) !important;
+    font-size: 10px !important; letter-spacing: 0.05em !important; color: var(--z-amber) !important; text-transform: uppercase;
+  }
+  #fiollo-audio-analyzer .faa-badge { font-family: var(--font-pixel) !important; font-size: 7px !important; letter-spacing: 0.08em; }
+  #fiollo-audio-analyzer .btn,
+  #fiollo-audio-analyzer .faa-mlbtn,
+  #fiollo-audio-analyzer .faa-btn2 { border-radius: 0 !important; }
+</style>
+</head>
+
+<body class="crt">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="wrap nav">
+  <a class="logo" href="/">ZALTURI</a>
+  <nav class="menu" aria-label="Primary">
+    <a href="/#listen">Listen</a>
+    <a href="https://disk.yandex.ru/d/LQxYDO_lA7LHRQ" target="_blank" rel="noopener">Download</a>
+    <a href="/about/">Manifesto</a>
+    <a href="/arcade/">Arcade</a>
+    <a href="/tools/" aria-current="page">Tools</a>
+  </nav>
+</header>
+
+<main id="main">
+  <nav class="wrap crumb" aria-label="Breadcrumb"><a href="/">Home</a> / Tools / Audio analyzer</nav>
+
+  <section class="wrap section" aria-labelledby="an-h">
+    <p class="kicker"><span class="blip" aria-hidden="true"></span> in-browser tool</p>
+    <h1 class="h-title" style="font-size:clamp(24px,5vw,46px)" id="an-h">Free online audio analyzer</h1>
+    <p class="prose lead" style="margin-top:16px">Drop a track and read it like a mastering engineer — loudness, peaks, dynamics, key, tempo and spectrum. It all runs in your browser; the file is never uploaded anywhere.</p>
+  </section>
+
+  <section class="wrap" style="padding-bottom:8px">
+                        <div id="fiollo-audio-analyzer" data-similar-db="/tools/analyzer/cdn/similar/">
+                            <style>
+                            @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+                            #fiollo-audio-analyzer {
+                                --bg: #16100a;
+                                --panel: #221910;
+                                --panel-2: #2e2210;
+                                --line: #3d2e14;
+                                --txt: #f5e6c8;
+                                --dim: #a08a5e;
+                                --faint: #6b5a36;
+                                --amber: #e8c56a;
+                                --amber-soft: #e0520d;
+                                --teal: #34d8c4;
+                                --green: #5ce08a;
+                                --red: #ff5a6a;
+                                --violet: #b18cff;
+                                --blue: #5aa9ff;
+                                --mono: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+                                --sans: 'IBM Plex Sans', system-ui, sans-serif;
+                                position: relative;
+                                color: var(--txt);
+                                font-family: var(--sans);
+                                background: radial-gradient(1200px 500px at 80% -10%, rgba(255, 138, 61, .08), transparent 60%), radial-gradient(900px 600px at -10% 110%, rgba(52, 216, 196, .06), transparent 60%), var(--bg);
+                                border: 1px solid var(--line);
+                                border-radius: 18px;
+                                overflow: hidden;
+                                max-width: 1080px;
+                                margin: 0 auto;
+                                line-height:1.45
+                            }
+
+                            #fiollo-audio-analyzer * {
+                                box-sizing:border-box
+                            }
+
+                            #fiollo-audio-analyzer::before {
+                                content: "";
+                                position: absolute;
+                                inset: 0;
+                                pointer-events: none;
+                                opacity: .025;
+                                z-index: 0;
+                                background-image: linear-gradient(var(--txt) 1px, transparent 1px), linear-gradient(90deg, var(--txt) 1px, transparent 1px);
+                                background-size:32px 32px
+                            }
+
+                            .faa-wrap {
+                                position: relative;
+                                z-index: 1;
+                                padding:26px 26px 30px
+                            }
+
+                            .faa-head {
+                                display: flex;
+                                align-items: flex-end;
+                                justify-content: space-between;
+                                gap: 16px;
+                                flex-wrap: wrap;
+                                margin-bottom:18px
+                            }
+
+                            .faa-title {
+                                font-family: var(--mono);
+                                font-weight: 700;
+                                font-size: 21px;
+                                letter-spacing: .06em;
+                                margin:0
+                            }
+
+                            .faa-title b {
+                                color:var(--amber)
+                            }
+
+                            .faa-sub {
+                                font-family: var(--mono);
+                                font-size: 11.5px;
+                                color: var(--dim);
+                                letter-spacing: .14em;
+                                text-transform: uppercase;
+                                margin-top:6px
+                            }
+
+                            .faa-badge {
+                                font-family: var(--mono);
+                                font-size: 10.5px;
+                                color: var(--teal);
+                                border: 1px solid var(--line);
+                                border-radius: 999px;
+                                padding: 5px 11px;
+                                letter-spacing: .1em;
+                                white-space:nowrap
+                            }
+
+                            .faa-mode {
+                                display: inline-flex;
+                                gap: 4px;
+                                background: var(--panel);
+                                border: 1px solid var(--line);
+                                border-radius: 11px;
+                                padding: 4px;
+                                margin-bottom:18px
+                            }
+
+                            .faa-mode button {
+                                font-family: var(--mono);
+                                font-size: 12.5px;
+                                color: var(--dim);
+                                background: transparent;
+                                border: none;
+                                border-radius: 8px;
+                                padding: 9px 16px;
+                                cursor: pointer;
+                                letter-spacing: .02em;
+                                transition:.15s
+                            }
+
+                            .faa-mode button.on {
+                                background: var(--amber);
+                                color: var(--bg);
+                                font-weight:600
+                            }
+
+                            .faa-drop {
+                                border: 1.5px dashed #343a45;
+                                border-radius: 14px;
+                                padding: 42px 24px;
+                                text-align: center;
+                                background: linear-gradient(180deg, rgba(255, 255, 255, .012), transparent);
+                                cursor: pointer;
+                                transition: .18s border-color, .18s background;
+                                position:relative
+                            }
+
+                            .faa-drop:hover {
+                                border-color: var(--amber-soft);
+                                background:rgba(255, 138, 61, .04)
+                            }
+
+                            .faa-drop.drag {
+                                border-color: var(--amber);
+                                background:rgba(255, 174, 66, .07)
+                            }
+
+                            .faa-drop .ic {
+                                font-size: 34px;
+                                opacity: .85;
+                                margin-bottom:10px
+                            }
+
+                            .faa-drop h3 {
+                                margin: 0 0 6px;
+                                font-family: var(--mono);
+                                font-weight: 600;
+                                font-size: 16px;
+                                letter-spacing:.02em
+                            }
+
+                            .faa-drop p {
+                                margin: 0;
+                                color: var(--dim);
+                                font-size:13px
+                            }
+
+                            .faa-drop .btn {
+                                margin-top: 16px;
+                                display: inline-block;
+                                font-family: var(--mono);
+                                font-size: 13px;
+                                font-weight: 600;
+                                color: var(--bg);
+                                background: var(--amber);
+                                border: none;
+                                border-radius: 9px;
+                                padding: 11px 20px;
+                                cursor: pointer;
+                                letter-spacing:.03em
+                            }
+
+                            .faa-formats {
+                                margin-top: 14px;
+                                font-family: var(--mono);
+                                font-size: 10.5px;
+                                color: var(--faint);
+                                letter-spacing:.08em
+                            }
+
+                            .faa-ab {
+                                display: grid;
+                                grid-template-columns: 1fr 1fr;
+                                gap:14px
+                            }
+
+                            .faa-slot {
+                                border: 1.5px dashed #343a45;
+                                border-radius: 14px;
+                                padding: 26px 18px;
+                                text-align: center;
+                                cursor: pointer;
+                                transition: .18s;
+                                position: relative;
+                                min-height: 140px;
+                                display: flex;
+                                flex-direction: column;
+                                justify-content: center;
+                                align-items:center
+                            }
+
+                            .faa-slot:hover {
+                                border-color: var(--amber-soft);
+                                background:rgba(255, 138, 61, .04)
+                            }
+
+                            .faa-slot.drag {
+                                border-color: var(--amber);
+                                background:rgba(255, 174, 66, .07)
+                            }
+
+                            .faa-slot.ready {
+                                border-style: solid;
+                                border-color:var(--teal)
+                            }
+
+                            .faa-slot .tag {
+                                font-family: var(--mono);
+                                font-size: 13px;
+                                font-weight: 700;
+                                letter-spacing: .14em;
+                                color: var(--amber)
+                            }
+
+                            .faa-slot[data-slot="B"] .tag {
+                                color:var(--violet)
+                            }
+
+                            .faa-slot .nm {
+                                font-family: var(--mono);
+                                font-size: 12px;
+                                color: var(--dim);
+                                margin-top: 10px;
+                                word-break: break-word;
+                                max-width:100%
+                            }
+
+                            .faa-slot .qk {
+                                font-family: var(--mono);
+                                font-size: 12px;
+                                color: var(--teal);
+                                margin-top:6px
+                            }
+
+                            .faa-progress {
+                                display: none;
+                                padding:30px 4px
+                            }
+
+                            .faa-progress.on {
+                                display:block
+                            }
+
+                            .faa-pbar {
+                                height: 7px;
+                                background: #1d212a;
+                                border-radius: 99px;
+                                overflow: hidden;
+                                border:1px solid var(--line)
+                            }
+
+                            .faa-pfill {
+                                height: 100%;
+                                width: 0%;
+                                background: linear-gradient(90deg, var(--amber-soft), var(--amber));
+                                transition:width .2s
+                            }
+
+                            .faa-pstage {
+                                font-family: var(--mono);
+                                font-size: 12px;
+                                color: var(--dim);
+                                margin-top: 12px;
+                                letter-spacing: .04em;
+                                display: flex;
+                                justify-content:space-between
+                            }
+
+                            .faa-results {
+                                display:none
+                            }
+
+                            .faa-results.on {
+                                display: block;
+                                position:relative
+                            }
+
+                            #fiollo-audio-analyzer.drag::after {
+                                content: 'Drop to replace the track';
+                                position: absolute;
+                                inset: 0;
+                                z-index: 100;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                text-align: center;
+                                padding: 20px;
+                                background: rgba(11, 11, 13, .9);
+                                border: 2px dashed var(--amber);
+                                border-radius: 18px;
+                                color: var(--amber);
+                                font: 600 16px var(--mono);
+                                letter-spacing: .03em;
+                                pointer-events:none
+                            }
+
+                            .faa-toolbar {
+                                display: flex;
+                                gap: 8px;
+                                justify-content: flex-end;
+                                flex-wrap: wrap;
+                                margin-bottom:14px
+                            }
+
+                            .faa-btn2 {
+                                font-family: var(--mono);
+                                font-size: 12px;
+                                color: var(--txt);
+                                background: var(--panel-2);
+                                border: 1px solid var(--line);
+                                border-radius: 8px;
+                                padding: 9px 14px;
+                                cursor: pointer;
+                                white-space: nowrap;
+                                letter-spacing: .02em;
+                                transition: .15s;
+                                display: inline-flex;
+                                align-items: center;
+                                gap:6px
+                            }
+
+                            .faa-btn2:hover {
+                                border-color:var(--amber-soft)
+                            }
+
+                            .faa-btn2.accent {
+                                background: var(--amber);
+                                color: var(--bg);
+                                border-color: var(--amber);
+                                font-weight:600
+                            }
+
+                            .faa-btn2[disabled] {
+                                opacity: .4;
+                                cursor:default
+                            }
+
+                            .faa-filerow {
+                                display: flex;
+                                gap: 18px;
+                                align-items: center;
+                                background: var(--panel);
+                                border: 1px solid var(--line);
+                                border-radius: 13px;
+                                padding: 14px 16px;
+                                margin-bottom: 18px;
+                                flex-wrap:wrap
+                            }
+
+                            .faa-cover {
+                                width: 74px;
+                                height: 74px;
+                                border-radius: 9px;
+                                background: var(--panel-2);
+                                flex: 0 0 auto;
+                                object-fit: cover;
+                                border: 1px solid var(--line);
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                font-size: 26px;
+                                color:var(--faint)
+                            }
+
+                            .faa-finfo {
+                                min-width: 200px;
+                                flex:1
+                            }
+
+                            .faa-fname {
+                                font-family: var(--mono);
+                                font-weight: 600;
+                                font-size: 15px;
+                                word-break:break-word
+                            }
+
+                            .faa-ftags {
+                                color: var(--dim);
+                                font-size: 13px;
+                                margin-top:3px
+                            }
+
+                            .faa-fmeta {
+                                display: flex;
+                                gap: 8px 16px;
+                                flex-wrap: wrap;
+                                margin-top:9px
+                            }
+
+                            .faa-fmeta span {
+                                font-family: var(--mono);
+                                font-size: 11.5px;
+                                color:var(--dim)
+                            }
+
+                            .faa-fmeta span b {
+                                color: var(--txt);
+                                font-weight:600
+                            }
+
+                            .faa-sec-h {
+                                font-family: var(--mono);
+                                font-size: 11px;
+                                letter-spacing: .18em;
+                                text-transform: uppercase;
+                                color: var(--faint);
+                                margin: 24px 0 12px;
+                                display: flex;
+                                align-items: center;
+                                gap:10px
+                            }
+
+                            .faa-sec-h::after {
+                                content: "";
+                                flex: 1;
+                                height: 1px;
+                                background:var(--line)
+                            }
+
+                            .faa-grid {
+                                display: grid;
+                                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                                gap:10px
+                            }
+
+                            .faa-card {
+                                background: var(--panel);
+                                border: 1px solid var(--line);
+                                border-radius: 11px;
+                                padding: 13px 14px;
+                                position: relative;
+                                overflow:hidden
+                            }
+
+                            .faa-card .k {
+                                font-family: var(--mono);
+                                font-size: 10px;
+                                letter-spacing: .12em;
+                                text-transform: uppercase;
+                                color:var(--dim)
+                            }
+
+                            .faa-card .v {
+                                font-family: var(--mono);
+                                font-weight: 600;
+                                font-size: 22px;
+                                margin-top: 5px;
+                                letter-spacing:-.01em
+                            }
+
+                            .faa-card .u {
+                                font-size: 12px;
+                                color: var(--dim);
+                                font-weight: 400;
+                                margin-left:3px
+                            }
+
+                            .faa-card .note {
+                                font-family: var(--mono);
+                                font-size: 10.5px;
+                                color: var(--faint);
+                                margin-top:4px
+                            }
+
+                            .faa-card.big .v {
+                                font-size:30px
+                            }
+
+                            .faa-card .v.good {
+                                color:var(--green)
+                            }
+
+                            .faa-card .v.warn {
+                                color:var(--amber)
+                            }
+
+                            .faa-card .v.bad {
+                                color:var(--red)
+                            }
+
+                            .faa-card .faa-i {
+                                display: inline-flex;
+                                align-items: center;
+                                justify-content: center;
+                                width: 14px;
+                                height: 14px;
+                                margin-left: 5px;
+                                border-radius: 50%;
+                                border: 1px solid var(--line);
+                                background: var(--panel-2);
+                                color: var(--dim);
+                                font-family: var(--mono);
+                                font-weight: 600;
+                                font-size: 9px;
+                                line-height: 1;
+                                cursor: pointer;
+                                vertical-align: middle;
+                                padding: 0;
+                                transition:color .15s, border-color .15s
+                            }
+
+                            .faa-card .faa-i:hover {
+                                color: var(--amber);
+                                border-color:var(--amber)
+                            }
+
+                            .faa-tip {
+                                display: none;
+                                margin-top: 9px;
+                                padding-top: 9px;
+                                border-top: 1px solid var(--line);
+                                font-family: var(--mono);
+                                font-size: 11px;
+                                line-height: 1.5;
+                                color: var(--dim);
+                                letter-spacing:.01em
+                            }
+
+                            .faa-tip.on {
+                                display:block
+                            }
+
+                            .faa-targets {
+                                width: 100%;
+                                border-collapse: collapse;
+                                font-family: var(--mono);
+                                font-size: 12.5px;
+                                overflow: hidden;
+                                border: 1px solid var(--line);
+                                border-radius:11px
+                            }
+
+                            .faa-targets th, .faa-targets td {
+                                padding: 10px 13px;
+                                text-align: left;
+                                border-bottom:1px solid var(--line)
+                            }
+
+                            .faa-targets th {
+                                font-size: 10px;
+                                letter-spacing: .1em;
+                                text-transform: uppercase;
+                                color: var(--dim);
+                                background:var(--panel)
+                            }
+
+                            .faa-targets td {
+                                color:var(--txt)
+                            }
+
+                            .faa-targets tr:last-child td {
+                                border-bottom:none
+                            }
+
+                            .faa-targets .diff.up {
+                                color:var(--amber)
+                            }
+
+                            .faa-targets .diff.dn {
+                                color:var(--teal)
+                            }
+
+                            .faa-targets .diff.ok {
+                                color:var(--green)
+                            }
+
+                            .faa-targets .pill {
+                                font-size: 10px;
+                                padding: 2px 8px;
+                                border-radius: 99px;
+                                border:1px solid var(--line)
+                            }
+
+                            .faa-cmp-heads {
+                                display: grid;
+                                grid-template-columns: 1fr 1fr;
+                                gap: 14px;
+                                margin-bottom:18px
+                            }
+
+                            .faa-cmp-head {
+                                background: var(--panel);
+                                border: 1px solid var(--line);
+                                border-radius: 12px;
+                                padding:13px 15px
+                            }
+
+                            .faa-cmp-head .lab {
+                                font-family: var(--mono);
+                                font-size: 11px;
+                                font-weight: 700;
+                                letter-spacing:.14em
+                            }
+
+                            .faa-cmp-head.A .lab {
+                                color:var(--amber)
+                            }
+
+                            .faa-cmp-head.B .lab {
+                                color:var(--violet)
+                            }
+
+                            .faa-cmp-head .nm {
+                                font-family: var(--mono);
+                                font-size: 13px;
+                                margin-top: 6px;
+                                word-break:break-word
+                            }
+
+                            .faa-cmp-head .sm {
+                                font-family: var(--mono);
+                                font-size: 11px;
+                                color: var(--dim);
+                                margin-top:4px
+                            }
+
+                            .faa-cmp-table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                font-family: var(--mono);
+                                font-size: 12.5px;
+                                border: 1px solid var(--line);
+                                border-radius: 11px;
+                                overflow:hidden
+                            }
+
+                            .faa-cmp-table th, .faa-cmp-table td {
+                                padding: 9px 13px;
+                                border-bottom: 1px solid var(--line);
+                                text-align:right
+                            }
+
+                            .faa-cmp-table th:first-child, .faa-cmp-table td:first-child {
+                                text-align: left;
+                                color:var(--dim)
+                            }
+
+                            .faa-cmp-table th {
+                                font-size: 10px;
+                                letter-spacing: .1em;
+                                text-transform: uppercase;
+                                color: var(--dim);
+                                background:var(--panel)
+                            }
+
+                            .faa-cmp-table th.A {
+                                color:var(--amber)
+                            }
+
+                            .faa-cmp-table th.B {
+                                color:var(--violet)
+                            }
+
+                            .faa-cmp-table tr:last-child td {
+                                border-bottom:none
+                            }
+
+                            .faa-cmp-table tr.sub td {
+                                color: var(--faint);
+                                font-size: 10px;
+                                letter-spacing: .12em;
+                                text-transform: uppercase;
+                                background:rgba(255, 255, 255, .015)
+                            }
+
+                            .faa-cmp-table .d.pos {
+                                color:var(--teal)
+                            }
+
+                            .faa-cmp-table .d.neg {
+                                color:var(--amber)
+                            }
+
+                            .faa-canvas-box {
+                                background: var(--panel);
+                                border: 1px solid var(--line);
+                                border-radius: 12px;
+                                padding: 12px 12px 8px;
+                                margin-top:10px
+                            }
+
+                            .faa-canvas-box .cap {
+                                font-family: var(--mono);
+                                font-size: 11px;
+                                color: var(--dim);
+                                display: flex;
+                                justify-content: space-between;
+                                flex-wrap: wrap;
+                                gap: 6px;
+                                margin-bottom: 8px;
+                                letter-spacing:.03em
+                            }
+
+                            .faa-canvas-box .cap em {
+                                color: var(--faint);
+                                font-style:normal
+                            }
+
+                            .faa-canvas-box canvas {
+                                display: block;
+                                width: 100%;
+                                border-radius:6px
+                            }
+
+                            .faa-legend {
+                                display: flex;
+                                gap: 14px;
+                                flex-wrap: wrap;
+                                font-family: var(--mono);
+                                font-size: 10.5px;
+                                color: var(--dim);
+                                margin-top:7px
+                            }
+
+                            .faa-legend i {
+                                width: 18px;
+                                height: 3px;
+                                display: inline-block;
+                                border-radius: 2px;
+                                vertical-align: middle;
+                                margin-right:5px
+                            }
+
+                            .faa-foot {
+                                font-family: var(--mono);
+                                font-size: 10.5px;
+                                color: var(--faint);
+                                margin-top: 22px;
+                                letter-spacing: .03em;
+                                line-height:1.7
+                            }
+
+                            .faa-err {
+                                display: none;
+                                color: var(--red);
+                                font-family: var(--mono);
+                                font-size: 13px;
+                                background: rgba(255, 90, 106, .08);
+                                border: 1px solid rgba(255, 90, 106, .3);
+                                border-radius: 10px;
+                                padding: 13px 15px;
+                                margin-top:14px
+                            }
+
+                            .faa-err.on {
+                                display:block
+                            }
+
+                            .faa-hint {
+                                display: none;
+                                font-family: var(--mono);
+                                font-size: 12px;
+                                color: var(--teal);
+                                background: rgba(52, 216, 196, .08);
+                                border: 1px solid rgba(52, 216, 196, .3);
+                                border-radius: 10px;
+                                padding: 12px 14px;
+                                margin-top: 14px;
+                                line-height:1.5
+                            }
+
+                            .faa-player {
+                                background: var(--panel);
+                                border: 1px solid var(--line);
+                                border-radius: 13px;
+                                padding:14px 16px
+                            }
+
+                            .faa-player audio {
+                                display:none
+                            }
+
+                            .faa-transport {
+                                display: flex;
+                                align-items: center;
+                                gap: 12px;
+                                margin-bottom:14px
+                            }
+
+                            .faa-play {
+                                flex: 0 0 auto;
+                                width: 44px;
+                                height: 44px;
+                                border-radius: 50%;
+                                border: none;
+                                background: var(--amber);
+                                color: var(--bg);
+                                cursor: pointer;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                transition:filter .15s, transform .08s
+                            }
+
+                            .faa-play:hover {
+                                filter:brightness(1.08)
+                            }
+
+                            .faa-play:active {
+                                transform:scale(.94)
+                            }
+
+                            .faa-play svg {
+                                width: 20px;
+                                height: 20px;
+                                display:block
+                            }
+
+                            .faa-time {
+                                font: 600 12px var(--mono);
+                                color: var(--dim);
+                                min-width: 40px;
+                                text-align: center;
+                                font-variant-numeric: tabular-nums;
+                                letter-spacing:.01em
+                            }
+
+                            .faa-seek {
+                                position: relative;
+                                flex: 1;
+                                height: 8px;
+                                background: var(--panel-2);
+                                border: 1px solid var(--line);
+                                border-radius: 99px;
+                                cursor: pointer;
+                                touch-action:none
+                            }
+
+                            .faa-seek-buf {
+                                position: absolute;
+                                left: 0;
+                                top: 0;
+                                bottom: 0;
+                                width: 0%;
+                                background: rgba(255, 255, 255, .07);
+                                border-radius:99px
+                            }
+
+                            .faa-seek-fill {
+                                position: absolute;
+                                left: 0;
+                                top: 0;
+                                bottom: 0;
+                                width: 0%;
+                                background: linear-gradient(90deg, var(--amber-soft), var(--amber));
+                                border-radius:99px
+                            }
+
+                            .faa-seek-knob {
+                                position: absolute;
+                                top: 50%;
+                                left: 0%;
+                                width: 14px;
+                                height: 14px;
+                                border-radius: 50%;
+                                background: #fff;
+                                transform: translate(-50%, -50%);
+                                box-shadow: 0 1px 5px rgba(0, 0, 0, .55);
+                                pointer-events: none;
+                                transition:transform .08s
+                            }
+
+                            .faa-seek:hover .faa-seek-knob {
+                                transform:translate(-50%, -50%) scale(1.12)
+                            }
+
+                            .faa-mini {
+                                flex: 0 0 auto;
+                                width: 32px;
+                                height: 32px;
+                                border: 1px solid var(--line);
+                                background: var(--panel-2);
+                                border-radius: 8px;
+                                color: var(--txt);
+                                cursor: pointer;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                transition:border-color .15s
+                            }
+
+                            .faa-mini:hover {
+                                border-color:var(--amber-soft)
+                            }
+
+                            .faa-mini svg {
+                                width: 18px;
+                                height: 18px;
+                                display:block
+                            }
+
+                            .faa-vol {
+                                position: relative;
+                                flex: 0 0 72px;
+                                height: 6px;
+                                background: var(--panel-2);
+                                border: 1px solid var(--line);
+                                border-radius: 99px;
+                                cursor: pointer;
+                                touch-action:none
+                            }
+
+                            .faa-vol-fill {
+                                position: absolute;
+                                left: 0;
+                                top: 0;
+                                bottom: 0;
+                                width: 100%;
+                                background: var(--teal);
+                                border-radius:99px
+                            }
+
+                            .faa-viz {
+                                display: grid;
+                                grid-template-columns: 1.8fr 1fr;
+                                gap: 18px;
+                                align-items:center
+                            }
+
+                            .faa-eq-box .cap, .faa-vu .cap {
+                                font-family: var(--mono);
+                                font-size: 10px;
+                                letter-spacing: .12em;
+                                text-transform: uppercase;
+                                color: var(--dim);
+                                margin-bottom:7px
+                            }
+
+                            .faa-eq-box canvas {
+                                display: block;
+                                width: 100%;
+                                border-radius: 6px;
+                                background: var(--panel-2);
+                                border:1px solid var(--line)
+                            }
+
+                            .faa-vu {
+                                display: flex;
+                                flex-direction: column;
+                                gap:9px
+                            }
+
+                            .faa-vu-ch {
+                                display: flex;
+                                align-items: center;
+                                gap:8px
+                            }
+
+                            .faa-vu-ch > span {
+                                width: 12px;
+                                font-family: var(--mono);
+                                font-size: 11px;
+                                color:var(--dim)
+                            }
+
+                            .faa-vu .bar {
+                                position: relative;
+                                flex: 1;
+                                height: 15px;
+                                background: var(--panel-2);
+                                border: 1px solid var(--line);
+                                border-radius: 4px;
+                                overflow:hidden
+                            }
+
+                            .faa-vu .bar > i {
+                                position: absolute;
+                                left: 0;
+                                top: 0;
+                                bottom: 0;
+                                width: 0%;
+                                background:linear-gradient(90deg, var(--green), var(--amber) 72%, var(--red))
+                            }
+
+                            .faa-vu .bar > b {
+                                position: absolute;
+                                top: 0;
+                                bottom: 0;
+                                width: 2px;
+                                background: #fff;
+                                left:0%
+                            }
+
+                            .faa-vu-scale {
+                                display: flex;
+                                justify-content: space-between;
+                                font-family: var(--mono);
+                                font-size: 9px;
+                                color: var(--faint);
+                                padding-left: 20px;
+                                margin-top:2px
+                            }
+
+                            .faa-eqp {
+                                margin-top: 14px;
+                                padding-top: 14px;
+                                border-top:1px solid var(--line)
+                            }
+
+                            .faa-eqtoggle {
+                                display: inline-flex;
+                                align-items: center;
+                                gap: 8px;
+                                font-family: var(--mono);
+                                font-size: 11px;
+                                letter-spacing: .1em;
+                                text-transform: uppercase;
+                                color: var(--amber);
+                                background: var(--panel-2);
+                                border: 1px solid var(--amber-soft);
+                                border-radius: 8px;
+                                padding: 8px 15px;
+                                cursor:pointer
+                            }
+
+                            .faa-eqtoggle:hover {
+                                background:rgba(255, 174, 66, .08)
+                            }
+
+                            .faa-eqarrow {
+                                font-size: 9px;
+                                transition:transform .15s
+                            }
+
+                            .faa-eqp.open .faa-eqarrow {
+                                transform:rotate(180deg)
+                            }
+
+                            .faa-eqbody {
+                                display: none;
+                                margin-top:14px
+                            }
+
+                            .faa-eqp.open .faa-eqbody {
+                                display:block
+                            }
+
+                            .faa-headright {
+                                display: flex;
+                                flex-direction: column;
+                                align-items: flex-end;
+                                gap:10px
+                            }
+
+                            .faa-supp-note {
+                                margin: -6px 0 18px;
+                                max-width: 680px;
+                                font-family: var(--mono);
+                                font-size: 11.5px;
+                                line-height: 1.6;
+                                color:var(--dim)
+                            }
+
+                            .faa-sim-note {
+                                font-family: var(--mono);
+                                font-size: 11.5px;
+                                color: var(--dim);
+                                margin: 10px 0 0;
+                                line-height:1.55
+                            }
+
+                            .faa-sim-note b {
+                                color: var(--amber);
+                                font-weight:600
+                            }
+
+                            .faa-sim-out {
+                                margin-top: 14px;
+                                display: flex;
+                                flex-direction: column;
+                                gap:8px
+                            }
+
+                            .faa-sim-row {
+                                display: flex;
+                                align-items: center;
+                                justify-content: space-between;
+                                gap: 12px;
+                                padding: 10px 13px;
+                                background: var(--panel-2);
+                                border: 1px solid var(--line);
+                                border-radius: 9px;
+                                flex-wrap:wrap
+                            }
+
+                            .faa-sim-tt {
+                                font-family: var(--mono);
+                                font-size: 13px;
+                                color: var(--txt);
+                                flex: 1;
+                                min-width: 160px;
+                                line-height:1.4
+                            }
+
+                            .faa-sim-tt b {
+                                display: block;
+                                margin-top: 2px;
+                                color: var(--dim);
+                                font-weight: 400;
+                                font-size:11px
+                            }
+
+                            .faa-sim-links {
+                                display: flex;
+                                gap: 7px;
+                                flex-wrap:wrap
+                            }
+
+                            .faa-sim-links a {
+                                font-family: var(--mono);
+                                font-size: 11px;
+                                text-decoration: none;
+                                padding: 6px 11px;
+                                border-radius: 7px;
+                                border: 1px solid var(--amber-soft);
+                                color: var(--amber);
+                                background: var(--panel);
+                                white-space:nowrap
+                            }
+
+                            .faa-sim-links a:hover {
+                                background:rgba(255, 174, 66, .08)
+                            }
+
+                            .faa-sim-err {
+                                font-family: var(--mono);
+                                font-size: 12px;
+                                color: var(--dim);
+                                padding: 6px 0;
+                                line-height:1.5
+                            }
+
+                            .faa-sim-play {
+                                flex: none;
+                                width: 34px;
+                                height: 34px;
+                                border-radius: 50%;
+                                border: 1px solid var(--amber-soft);
+                                background: var(--panel);
+                                color: var(--amber);
+                                font-size: 12px;
+                                line-height: 1;
+                                cursor: pointer;
+                                font-family:var(--mono)
+                            }
+
+                            .faa-sim-play:hover {
+                                background:rgba(255, 174, 66, .08)
+                            }
+
+                            .faa-sim-play.on {
+                                background: var(--amber);
+                                color: var(--bg);
+                                border-color:var(--amber)
+                            }
+
+                            .faa-sim-pct {
+                                flex: none;
+                                font-family: var(--mono);
+                                font-size: 11px;
+                                color: var(--amber);
+                                border: 1px solid var(--line);
+                                border-radius: 6px;
+                                padding: 4px 7px;
+                                background:var(--panel)
+                            }
+
+                            .faa-donate {
+                                display: inline-flex;
+                                align-items: center;
+                                gap: 7px;
+                                font-family: var(--mono);
+                                font-size: 13px;
+                                font-weight: 700;
+                                background: var(--amber);
+                                border: none;
+                                border-radius: 9px;
+                                padding: 11px 20px;
+                                text-decoration: none;
+                                white-space: nowrap;
+                                cursor: pointer;
+                                transition:filter .12s
+                            }
+
+                            .faa-donate, .faa-donate:link, .faa-donate:visited, .faa-donate:hover, .faa-donate:active {
+                                color:var(--bg, #0e0e10) !important
+                            }
+
+                            .faa-donate:hover {
+                                filter:brightness(1.08)
+                            }
+
+                            .faa-donate-sm {
+                                font-size: 12px;
+                                padding: 8px 15px;
+                                gap:6px
+                            }
+
+                            .faa-eqp .cap {
+                                display: flex;
+                                align-items: center;
+                                justify-content: space-between;
+                                gap: 10px;
+                                font-family: var(--mono);
+                                font-size: 10px;
+                                letter-spacing: .12em;
+                                text-transform: uppercase;
+                                color:var(--dim)
+                            }
+
+                            .faa-eqreset {
+                                font-family: var(--mono);
+                                font-size: 11px;
+                                letter-spacing: 0;
+                                text-transform: none;
+                                color: var(--dim);
+                                background: var(--panel-2);
+                                border: 1px solid var(--line);
+                                border-radius: 6px;
+                                padding: 4px 12px;
+                                cursor:pointer
+                            }
+
+                            .faa-eqreset:hover {
+                                border-color: var(--amber-soft);
+                                color:var(--amber)
+                            }
+
+                            .faa-eqp-bands {
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: flex-start;
+                                gap: 6px;
+                                margin-top: 12px;
+                                padding:0 2px
+                            }
+
+                            .faa-eqp-band {
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                gap: 7px;
+                                flex:1
+                            }
+
+                            .faa-eqp-band .g {
+                                font-family: var(--mono);
+                                font-size: 11px;
+                                font-weight: 600;
+                                color: var(--dim);
+                                min-height:14px
+                            }
+
+                            .faa-eqp-band.on .g {
+                                color:var(--amber)
+                            }
+
+                            .faa-eqp-sl {
+                                writing-mode: vertical-lr;
+                                direction: rtl;
+                                -webkit-appearance: slider-vertical;
+                                appearance: slider-vertical;
+                                width: 22px;
+                                height: 96px;
+                                accent-color: var(--amber);
+                                cursor: pointer;
+                                background:transparent
+                            }
+
+                            .faa-eqp-band .f {
+                                font-family: var(--mono);
+                                font-size: 10px;
+                                color:var(--faint)
+                            }
+
+                            .faa-eqp-bands.pro {
+                                gap:3px
+                            }
+
+                            .faa-eqp-bands.pro .faa-eqp-band {
+                                gap:5px
+                            }
+
+                            .faa-eqp-bands.pro .faa-eqp-sl {
+                                width: 15px;
+                                height:108px
+                            }
+
+                            .faa-eqp-bands.pro .faa-eqp-band .g {
+                                font-size:9px
+                            }
+
+                            .faa-eqp-bands.pro .faa-eqp-band .f {
+                                font-size: 8px;
+                                letter-spacing:-.02em
+                            }
+
+                            .bpm-ctl {
+                                display: flex;
+                                gap: 6px;
+                                margin-top:7px
+                            }
+
+                            .bpm-ctl button {
+                                font-family: var(--mono);
+                                font-size: 11px;
+                                color: var(--txt);
+                                background: var(--panel-2);
+                                border: 1px solid var(--line);
+                                border-radius: 6px;
+                                padding: 3px 10px;
+                                cursor:pointer
+                            }
+
+                            .bpm-ctl button:hover {
+                                border-color:var(--amber-soft)
+                            }
+
+                            .faa-tapcard {
+                                display: flex;
+                                flex-direction:column
+                            }
+
+                            .faa-tapbtn {
+                                width: 100%;
+                                flex: 1;
+                                margin-top: 8px;
+                                min-height: 56px;
+                                font-family: var(--mono);
+                                font-size: 18px;
+                                font-weight: 700;
+                                letter-spacing: .06em;
+                                color: var(--amber);
+                                background: var(--panel-2);
+                                border: 1px solid var(--amber-soft);
+                                border-radius: 9px;
+                                cursor: pointer;
+                                transition: background .07s, color .07s, border-color .07s, transform .07s;
+                                -webkit-tap-highlight-color: transparent;
+                                user-select:none
+                            }
+
+                            .faa-tapbtn:hover {
+                                border-color:var(--amber)
+                            }
+
+                            .faa-tapbtn:active, .faa-tapbtn.tap-on {
+                                background: var(--amber);
+                                border-color: var(--amber);
+                                color: var(--bg);
+                                transform:scale(.97)
+                            }
+
+                            .faa-genre-wrap {
+                                margin-top:10px
+                            }
+
+                            .faa-genre-wrap {
+                                margin-top:10px
+                            }
+
+                            .faa-genre-card {
+                                display: flex;
+                                gap: 18px;
+                                align-items: stretch;
+                                width: 100%;
+                                background: var(--panel);
+                                border: 1px solid var(--line);
+                                border-radius: 12px;
+                                padding: 16px 18px;
+                                flex-wrap:wrap
+                            }
+
+                            .faa-genre-main {
+                                flex: 0 0 auto;
+                                min-width: 210px;
+                                border-right: 1px solid var(--line);
+                                padding-right:18px
+                            }
+
+                            .faa-genre-main .lbl {
+                                font: 600 10px/1 var(--mono);
+                                letter-spacing: .16em;
+                                text-transform: uppercase;
+                                color:var(--dim)
+                            }
+
+                            .faa-genre-main .name {
+                                font: 700 26px/1.12 var(--mono);
+                                color: var(--amber);
+                                margin-top: 9px;
+                                letter-spacing:-.01em
+                            }
+
+                            .faa-genre-main .alt {
+                                font: 500 12px/1.4 var(--mono);
+                                color: var(--dim);
+                                margin-top:9px
+                            }
+
+                            .faa-genre-main .alt b {
+                                color: var(--txt);
+                                font-weight:600
+                            }
+
+                            .faa-genre-feat {
+                                flex: 1 1 280px;
+                                display: flex;
+                                flex-direction: column;
+                                justify-content: center;
+                                gap:11px
+                            }
+
+                            .faa-genre-feat .chips {
+                                display: flex;
+                                flex-wrap: wrap;
+                                gap:6px
+                            }
+
+                            .faa-genre-feat .chip {
+                                font: 500 11px var(--mono);
+                                color: var(--txt);
+                                background: var(--panel-2);
+                                border: 1px solid var(--line);
+                                border-radius: 999px;
+                                padding:4px 11px
+                            }
+
+                            .faa-genre-feat .metrics {
+                                font: 500 11.5px/1.5 var(--mono);
+                                color: var(--dim);
+                                letter-spacing:.02em
+                            }
+
+                            .faa-genre-rank {
+                                display: flex;
+                                flex-direction: column;
+                                gap:5px
+                            }
+
+                            .faa-genre-rank .grow {
+                                display: flex;
+                                align-items: center;
+                                gap: 8px;
+                                font: 600 11px var(--mono);
+                                color:var(--dim)
+                            }
+
+                            .faa-genre-rank .grow span {
+                                flex: 0 0 150px;
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow:ellipsis
+                            }
+
+                            .faa-genre-rank .grow i {
+                                flex: 1;
+                                height: 7px;
+                                border-radius: 4px;
+                                background: var(--faint);
+                                min-width: 3px;
+                                display: block;
+                                opacity:.55
+                            }
+
+                            .faa-genre-rank .grow.top span {
+                                color:var(--txt)
+                            }
+
+                            .faa-genre-rank .grow.top i {
+                                background: var(--amber);
+                                opacity:1
+                            }
+
+                            .faa-mlbtn {
+                                appearance: none;
+                                cursor: pointer;
+                                font: 600 12px var(--sans);
+                                color: var(--bg);
+                                background: var(--amber);
+                                border: 0;
+                                border-radius: 8px;
+                                padding: 9px 14px;
+                                transition:filter .15s
+                            }
+
+                            .faa-mlbtn:hover {
+                                filter:brightness(1.08)
+                            }
+
+                            .faa-mlbtn:disabled {
+                                opacity: .55;
+                                cursor:default
+                            }
+
+                            .faa-genre-out {
+                                margin-top:12px
+                            }
+
+                            .faa-ml-prog {
+                                display: flex;
+                                align-items: center;
+                                gap: 10px;
+                                margin-top: 12px;
+                                font: 500 11px/1.4 var(--mono);
+                                color: var(--dim);
+                                letter-spacing:.03em
+                            }
+
+                            .faa-ml-prog-bar {
+                                position: relative;
+                                flex: 0 0 130px;
+                                height: 4px;
+                                background: rgba(255, 174, 66, .16);
+                                border-radius: 3px;
+                                overflow:hidden
+                            }
+
+                            .faa-ml-prog-bar i {
+                                position: absolute;
+                                top: 0;
+                                left: 0;
+                                width: 40%;
+                                height: 100%;
+                                background: var(--amber);
+                                border-radius: 3px;
+                                animation: faaMl 1.05s linear infinite;
+                                will-change:transform
+                            }
+
+                            @keyframes faaMl {
+                                from {
+                                    transform:translateX(-100%)
+                                }
+
+                                to {
+                                    transform:translateX(250%)
+                                }
+                            }
+
+                            .faa-ml-hint {
+                                margin-top: 8px;
+                                font: 500 11px/1.5 var(--mono);
+                                color: var(--dim);
+                                letter-spacing: .02em;
+                                max-width:560px
+                            }
+
+                            .faa-genre-note {
+                                font: 500 12px/1.55 var(--mono);
+                                color: var(--dim);
+                                background: var(--panel-2);
+                                border: 1px solid var(--line);
+                                border-radius: 8px;
+                                padding:10px 12px
+                            }
+
+                            .faa-genre-note b {
+                                color: var(--txt);
+                                font-weight:600
+                            }
+
+                            .faa-genre-bar {
+                                display: flex;
+                                align-items: center;
+                                gap: 8px;
+                                margin: 6px 0;
+                                font:600 12px var(--mono)
+                            }
+
+                            .faa-genre-bar span {
+                                flex: 0 0 200px;
+                                color: var(--txt);
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow:ellipsis
+                            }
+
+                            .faa-genre-bar .trk {
+                                flex: 1;
+                                height: 10px;
+                                border-radius: 5px;
+                                background: var(--panel-2);
+                                overflow: hidden;
+                                display:block
+                            }
+
+                            .faa-genre-bar .trk i {
+                                display: block;
+                                height: 100%;
+                                width: 0;
+                                background: var(--amber);
+                                border-radius: 5px;
+                                min-width:2px
+                            }
+
+                            .faa-genre-bar b {
+                                flex: 0 0 40px;
+                                text-align: right;
+                                color: var(--dim);
+                                font-weight:600
+                            }
+
+                            .faa-gridbox canvas {
+                                cursor: ew-resize;
+                                touch-action:none
+                            }
+
+                            #faaWave {
+                                cursor: ew-resize;
+                                touch-action:none
+                            }
+
+                            .faa-gridctl {
+                                display: flex;
+                                align-items: center;
+                                gap: 7px;
+                                margin-top: 9px;
+                                flex-wrap:wrap
+                            }
+
+                            .faa-gridctl button {
+                                font-family: var(--mono);
+                                font-size: 12px;
+                                color: var(--txt);
+                                background: var(--panel-2);
+                                border: 1px solid var(--line);
+                                border-radius: 6px;
+                                padding: 5px 11px;
+                                cursor:pointer
+                            }
+
+                            .faa-gridctl button:hover {
+                                border-color:var(--amber-soft)
+                            }
+
+                            .faa-gridbpm {
+                                display: inline-flex;
+                                flex-direction: column;
+                                align-items: center;
+                                min-width: 78px;
+                                padding:0 6px
+                            }
+
+                            .faa-gridbpm b {
+                                font-family: var(--mono);
+                                font-size: 18px;
+                                font-weight: 700;
+                                color: var(--amber);
+                                line-height:1
+                            }
+
+                            .faa-gridbpm i {
+                                font-family: var(--mono);
+                                font-size: 9px;
+                                color: var(--dim);
+                                font-style: normal;
+                                letter-spacing: .04em;
+                                margin-top:2px
+                            }
+
+                            .faa-gridapply {
+                                margin-left: auto;
+                                color: var(--amber) !important;
+                                border-color:var(--amber-soft) !important
+                            }
+
+                            .faa-gridapply:hover {
+                                background: var(--amber) !important;
+                                color: var(--bg) !important;
+                                border-color:var(--amber) !important
+                            }
+
+                            .faa-gridctl2 {
+                                margin-top: 8px;
+                                gap:5px
+                            }
+
+                            .faa-gridctl2 button {
+                                min-width: 34px;
+                                text-align: center;
+                                padding:5px 9px
+                            }
+
+                            .faa-gridlab {
+                                font-family: var(--mono);
+                                font-size: 10px;
+                                color: var(--dim);
+                                margin-left: 10px;
+                                letter-spacing: .04em;
+                                text-transform:uppercase
+                            }
+
+                            .faa-gridctl2 .faa-gridlab:first-child {
+                                margin-left:0
+                            }
+
+                            .faa-wheel {
+                                display: flex;
+                                justify-content: center;
+                                padding:8px 0 2px
+                            }
+
+                            .faa-wheel-svg {
+                                width: 100%;
+                                max-width: 380px;
+                                height: auto;
+                                font-family:var(--mono)
+                            }
+
+                            .faa-wheel-svg path {
+                                transition:opacity .15s
+                            }
+
+                            .faa-wheel-svg path:hover {
+                                opacity:.82
+                            }
+
+                            @media (max-width: 560px) {
+                                .faa-wrap {
+                                    padding:18px 14px 22px
+                                }
+
+                                .faa-headright {
+                                    align-items:flex-start
+                                }
+
+                                .faa-card .v {
+                                    font-size:19px
+                                }
+
+                                .faa-card.big .v {
+                                    font-size:25px
+                                }
+
+                                .faa-ab, .faa-cmp-heads, .faa-viz {
+                                    grid-template-columns:1fr
+                                }
+
+                                .faa-genre-main {
+                                    border-right: none;
+                                    border-bottom: 1px solid var(--line);
+                                    padding-right: 0;
+                                    padding-bottom: 13px;
+                                    width: 100%;
+                                    min-width:0
+                                }
+
+                                .faa-genre-main .name {
+                                    font-size:22px
+                                }
+
+                                .faa-genre-rank .grow span {
+                                    flex-basis:120px
+                                }
+
+                                .faa-vol {
+                                    display: none
+                                }
+                            }
+                            </style>
+                            <div class="faa-wrap">
+                                <div class="faa-head">
+                                    <div>
+                                        <h2 class="faa-title">AUDIO ANALYZER</h2>
+                                        <div class="faa-sub">Loudness · True Peak · Spectrum · Metadata</div>
+                                    </div>
+                                    <div class="faa-headright">
+                                        <div class="faa-badge">ITU-R BS.1770-4 · EBU R128</div>
+                                    </div>
+                                </div>
+                                <p class="faa-supp-note">Free and fully local — your files never leave the browser. No upload, no account, no ads.</p>
+                                <div class="faa-mode" id="faaMode">
+                                    <button data-m="single" class="on" type="button">Single track</button>
+                                    <button data-m="compare" type="button">Compare A / B</button>
+                                </div>
+                                <div class="faa-drop" id="faaDrop">
+                                    <div class="ic">⎙</div>
+                                    <h3>Drop an audio file here</h3>
+                                    <p>Everything runs in your browser — the file is never uploaded</p>
+                                    <button class="btn" type="button" id="faaPick">Choose file</button>
+                                    <div class="faa-formats">WAV · FLAC · MP3 · AAC/M4A · OGG · OPUS · AIFF</div>
+                                    <input type="file" id="faaInput" accept="audio/*,.wav,.flac,.mp3,.m4a,.aac,.ogg,.opus,.aiff,.aif" style="display:none">
+                                </div>
+                                <div class="faa-ab" id="faaAB" style="display:none">
+                                    <div class="faa-slot" data-slot="A">
+                                        <div class="tag">TRACK A</div>
+                                        <div class="nm" id="faaSlotAName">drag or choose</div>
+                                        <div class="qk" id="faaSlotAQk"></div>
+                                        <input type="file" data-slot="A" accept="audio/*,.wav,.flac,.mp3,.m4a,.aac,.ogg,.opus,.aiff,.aif" style="display:none">
+                                    </div>
+                                    <div class="faa-slot" data-slot="B">
+                                        <div class="tag">TRACK B</div>
+                                        <div class="nm" id="faaSlotBName">drag or choose</div>
+                                        <div class="qk" id="faaSlotBQk"></div>
+                                        <input type="file" data-slot="B" accept="audio/*,.wav,.flac,.mp3,.m4a,.aac,.ogg,.opus,.aiff,.aif" style="display:none">
+                                    </div>
+                                </div>
+                                <div class="faa-progress" id="faaProg">
+                                    <div class="faa-pbar">
+                                        <div class="faa-pfill" id="faaPFill"></div>
+                                    </div>
+                                    <div class="faa-pstage">
+                                        <span id="faaPStage">Decoding…</span>
+                                        <span id="faaPPct">0%</span>
+                                    </div>
+                                </div>
+                                <div class="faa-err" id="faaErr"></div>
+                                <div class="faa-results" id="faaResSingle">
+                                    <div class="faa-toolbar">
+                                        <button class="faa-btn2" type="button" id="faaPngS">↧ PNG</button>
+                                        <button class="faa-btn2" type="button" id="faaPdfS">↧ PDF</button>
+                                        <button class="faa-btn2" type="button" id="faaResetS">New file</button>
+                                    </div>
+                                    <div class="faa-filerow">
+                                        <div class="faa-cover" id="faaCover">♪</div>
+                                        <div class="faa-finfo">
+                                            <div class="faa-fname" id="faaFName">—</div>
+                                            <div class="faa-ftags" id="faaFTags"></div>
+                                            <div class="faa-fmeta" id="faaFMeta"></div>
+                                        </div>
+                                    </div>
+                                    <div class="faa-sec-h">Playback</div>
+                                    <div class="faa-player">
+                                        <audio id="faaAudio" preload="metadata"></audio>
+                                        <div class="faa-transport">
+                                            <button class="faa-play" type="button" id="faaPlay" aria-label="Play">
+                                                <svg class="ic-play" viewBox="0 0 24 24" aria-hidden="true">
+                                                    <path d="M8 5v14l11-7z" fill="currentColor"/>
+                                                </svg>
+                                                <svg class="ic-pause" viewBox="0 0 24 24" aria-hidden="true" style="display:none">
+                                                    <path d="M6 5h4v14H6zM14 5h4v14h-4z" fill="currentColor"/>
+                                                </svg>
+                                            </button>
+                                            <div class="faa-time" id="faaCur">0:00</div>
+                                            <div class="faa-seek" id="faaSeek">
+                                                <div class="faa-seek-buf" id="faaBuf"></div>
+                                                <div class="faa-seek-fill" id="faaSeekFill"></div>
+                                                <div class="faa-seek-knob" id="faaKnob"></div>
+                                            </div>
+                                            <div class="faa-time" id="faaDur">0:00</div>
+                                            <button class="faa-mini" type="button" id="faaMute" aria-label="Sound">
+                                                <svg class="ic-vol" viewBox="0 0 24 24" aria-hidden="true">
+                                                    <path d="M4 9v6h4l5 5V4L8 9H4z" fill="currentColor"/>
+                                                    <path d="M16 8.5a4 4 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                                                </svg>
+                                                <svg class="ic-mute" viewBox="0 0 24 24" aria-hidden="true" style="display:none">
+                                                    <path d="M4 9v6h4l5 5V4L8 9H4z" fill="currentColor"/>
+                                                    <path d="M16 9l5 5M21 9l-5 5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                                                </svg>
+                                            </button>
+                                            <div class="faa-vol" id="faaVol">
+                                                <div class="faa-vol-fill" id="faaVolFill"></div>
+                                            </div>
+                                        </div>
+                                        <div class="faa-viz">
+                                            <div class="faa-eq-box">
+                                                <div class="cap">Real-time spectrum</div>
+                                                <canvas id="faaEq" height="120">
+                                                </canvas>
+                                            </div>
+                                            <div class="faa-vu">
+                                                <div class="cap">VU meter (RMS, dBFS)</div>
+                                                <div class="faa-vu-ch">
+                                                    <span>L</span>
+                                                    <div class="bar">
+                                                        <i id="faaVuL"></i>
+                                                        <b id="faaVuLp"></b>
+                                                    </div>
+                                                </div>
+                                                <div class="faa-vu-ch">
+                                                    <span>R</span>
+                                                    <div class="bar">
+                                                        <i id="faaVuR"></i>
+                                                        <b id="faaVuRp"></b>
+                                                    </div>
+                                                </div>
+                                                <div class="faa-vu-scale">
+                                                    <span>−60</span>
+                                                    <span>−45</span>
+                                                    <span>−30</span>
+                                                    <span>−15</span>
+                                                    <span>0</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="faa-eqp" id="faaEqp">
+                                            <button type="button" id="faaEqToggle" class="faa-eqtoggle" aria-expanded="false">
+                                                Equalizer
+                                                <span class="faa-eqarrow">▾</span>
+                                            </button>
+                                            <div class="faa-eqbody" id="faaEqBody">
+                                                <div class="cap">
+                                                    <span>Equalizer · 8 bands</span>
+                                                    <button type="button" id="faaEqReset" class="faa-eqreset">Reset</button>
+                                                </div>
+                                                <div class="faa-eqp-bands" id="faaEqBands"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="faa-sec-h">Key & tempo</div>
+                                    <div class="faa-grid" id="faaKey"></div>
+                                    <div class="faa-canvas-box faa-gridbox" id="faaGridBox">
+                                        <div class="cap">
+                                            <span>Tempo grid · align to transients</span>
+                                            <em>drag — move track · double-click — set beat</em>
+                                        </div>
+                                        <canvas id="faaGridWave" height="130">
+                                        </canvas>
+                                        <div class="faa-gridctl">
+                                            <button type="button" id="faaGridDn2">−1</button>
+                                            <button type="button" id="faaGridDn">−0.1</button>
+                                            <span class="faa-gridbpm">
+                                                <b id="faaGridBpm">—</b>
+                                                <i>BPM from grid</i>
+                                            </span>
+                                            <button type="button" id="faaGridUp">+0.1</button>
+                                            <button type="button" id="faaGridUp2">+1</button>
+                                            <button type="button" id="faaGridApply" class="faa-gridapply">Apply to tempo</button>
+                                        </div>
+                                        <div class="faa-gridctl faa-gridctl2">
+                                            <span class="faa-gridlab">phase</span>
+                                            <button type="button" id="faaGridPhL" title="Shift grid left">◄</button>
+                                            <button type="button" id="faaGridPhR" title="Shift grid right">►</button>
+                                            <span class="faa-gridlab">zoom</span>
+                                            <button type="button" id="faaGridZmO" title="Zoom out">−</button>
+                                            <button type="button" id="faaGridZmI" title="Zoom in">+</button>
+                                            <span class="faa-gridlab">amplitude</span>
+                                            <button type="button" id="faaGridAmO" title="Decrease">−</button>
+                                            <button type="button" id="faaGridAmI" title="Increase">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="faa-canvas-box">
+                                        <div class="cap">
+                                            <span>Chroma profile · 12 semitones</span>
+                                            <em>orange — tonic</em>
+                                        </div>
+                                        <canvas id="faaChroma" height="120">
+                                        </canvas>
+                                    </div>
+                                    <div class="faa-canvas-box">
+                                        <div class="cap">
+                                            <span>Camelot · key wheel</span>
+                                            <em>orange — your track, teal — mix-compatible keys</em>
+                                        </div>
+                                        <div id="faaWheel" class="faa-wheel"></div>
+                                    </div>
+                                    <div class="faa-sec-h">Genre</div>
+                                    <div id="faaGenre"></div>
+                                    <div id="faaGenreML" class="faa-genre-wrap"></div>
+                                    <div class="faa-sec-h">Similar tracks</div>
+                                    <div id="faaSimilar" class="faa-sim-wrap">
+                                        <button class="faa-mlbtn" type="button" id="faaSimBtn">♫ Find similar tracks</button>
+                                        <div class="faa-sim-note">A neural net compares your track's sound to a database of real tracks across 400 style features and finds the closest matches — with previews right here and links to Apple Music, YouTube and Yandex Music. Everything runs in your browser.</div>
+                                        <div id="faaSimOut" class="faa-sim-out"></div>
+                                    </div>
+                                    <div class="faa-sec-h">Technical specs</div>
+                                    <div class="faa-grid" id="faaTech"></div>
+                                    <div class="faa-sec-h">Loudness & dynamics</div>
+                                    <div class="faa-grid" id="faaLoud"></div>
+                                    <div class="faa-sec-h">Platform targets · integrated loudness</div>
+                                    <table class="faa-targets" id="faaTargets">
+                                        <tbody></tbody>
+                                    </table>
+                                    <div class="faa-sec-h">Waveform & peaks</div>
+                                    <div class="faa-canvas-box">
+                                        <div class="cap">
+                                            <span id="faaWaveCap">Waveform</span>
+                                            <em>drag — move · red — clipping (above −1 dBTP)</em>
+                                        </div>
+                                        <canvas id="faaWave" height="220">
+                                        </canvas>
+                                        <div class="faa-gridctl faa-gridctl2">
+                                            <span class="faa-gridlab">zoom</span>
+                                            <button type="button" id="faaWaveZmO" title="Zoom out">−</button>
+                                            <button type="button" id="faaWaveZmI" title="Zoom in">+</button>
+                                            <span class="faa-gridlab">gain</span>
+                                            <button type="button" id="faaWaveAmO" title="Decrease">−</button>
+                                            <button type="button" id="faaWaveAmI" title="Increase">+</button>
+                                            <button type="button" id="faaWaveReset" title="Whole track">reset</button>
+                                        </div>
+                                    </div>
+                                    <div class="faa-sec-h">Loudness over time</div>
+                                    <div class="faa-canvas-box">
+                                        <div class="cap">
+                                            <span>Momentary (400 ms) · Short-term (3 s) · Integrated</span>
+                                        </div>
+                                        <canvas id="faaLoudGraph" height="200">
+                                        </canvas>
+                                        <div class="faa-legend">
+                                            <span>
+                                                <i style="background:var(--amber)"></i>
+                                                Momentary
+                                            </span>
+                                            <span>
+                                                <i style="background:var(--teal)"></i>
+                                                Short-term
+                                            </span>
+                                            <span>
+                                                <i style="background:var(--green)"></i>
+                                                Integrated
+                                            </span>
+                                            <span>
+                                                <i style="background:#444"></i>
+                                                −14 LUFS
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="faa-sec-h">Average spectrum</div>
+                                    <div class="faa-canvas-box">
+                                        <div class="cap">
+                                            <span>Average magnitude spectrum</span>
+                                            <em>log frequency scale, 20 Hz – Nyquist</em>
+                                        </div>
+                                        <canvas id="faaSpec" height="200">
+                                        </canvas>
+                                    </div>
+                                    <div class="faa-sec-h">Spectrogram</div>
+                                    <div class="faa-canvas-box">
+                                        <div class="cap">
+                                            <span>Spectrogram</span>
+                                            <em>time → / frequency ↑ (log) / energy — colour</em>
+                                        </div>
+                                        <canvas id="faaSgram" height="240">
+                                        </canvas>
+                                    </div>
+                                    <div class="faa-foot" id="faaFoot"></div>
+                                </div>
+                                <div class="faa-results" id="faaResCompare">
+                                    <div class="faa-toolbar">
+                                        <button class="faa-btn2" type="button" id="faaPngC">↧ PNG</button>
+                                        <button class="faa-btn2" type="button" id="faaPdfC">↧ PDF</button>
+                                        <button class="faa-btn2" type="button" id="faaResetC">Reset</button>
+                                    </div>
+                                    <div class="faa-cmp-heads">
+                                        <div class="faa-cmp-head A">
+                                            <div class="lab">TRACK A</div>
+                                            <div class="nm" id="faaCmpAName">—</div>
+                                            <div class="sm" id="faaCmpASm"></div>
+                                        </div>
+                                        <div class="faa-cmp-head B">
+                                            <div class="lab">TRACK B</div>
+                                            <div class="nm" id="faaCmpBName">—</div>
+                                            <div class="sm" id="faaCmpBSm"></div>
+                                        </div>
+                                    </div>
+                                    <div class="faa-sec-h">Metric comparison</div>
+                                    <table class="faa-cmp-table" id="faaCmpTable">
+                                        <tbody></tbody>
+                                    </table>
+                                    <div class="faa-sec-h">Loudness over time · A vs B</div>
+                                    <div class="faa-canvas-box">
+                                        <div class="cap">
+                                            <span>Short-term (3 s) + Integrated</span>
+                                        </div>
+                                        <canvas id="faaCmpLoud" height="210">
+                                        </canvas>
+                                        <div class="faa-legend">
+                                            <span>
+                                                <i style="background:var(--teal)"></i>
+                                                A · short-term
+                                            </span>
+                                            <span>
+                                                <i style="background:var(--green)"></i>
+                                                A · integrated
+                                            </span>
+                                            <span>
+                                                <i style="background:var(--violet)"></i>
+                                                B · short-term
+                                            </span>
+                                            <span>
+                                                <i style="background:var(--blue)"></i>
+                                                B · integrated
+                                            </span>
+                                            <span>
+                                                <i style="background:#444"></i>
+                                                −14 LUFS
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="faa-sec-h">Average spectrum · A vs B</div>
+                                    <div class="faa-canvas-box">
+                                        <div class="cap">
+                                            <span>Average magnitude spectrum</span>
+                                            <em>log frequency scale</em>
+                                        </div>
+                                        <canvas id="faaCmpSpec" height="210">
+                                        </canvas>
+                                        <div class="faa-legend">
+                                            <span>
+                                                <i style="background:var(--amber)"></i>
+                                                Track A
+                                            </span>
+                                            <span>
+                                                <i style="background:var(--violet)"></i>
+                                                Track B
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="faa-sec-h">Waveform</div>
+                                    <div class="faa-canvas-box">
+                                        <div class="cap">
+                                            <span>Track A</span>
+                                        </div>
+                                        <canvas id="faaCmpWaveA" height="150">
+                                        </canvas>
+                                    </div>
+                                    <div class="faa-canvas-box">
+                                        <div class="cap">
+                                            <span>Track B</span>
+                                        </div>
+                                        <canvas id="faaCmpWaveB" height="150">
+                                        </canvas>
+                                    </div>
+                                    <div class="faa-sec-h">Spectrograms</div>
+                                    <div class="faa-canvas-box">
+                                        <div class="cap">
+                                            <span>Track A</span>
+                                        </div>
+                                        <canvas id="faaCmpSgA" height="200">
+                                        </canvas>
+                                    </div>
+                                    <div class="faa-canvas-box">
+                                        <div class="cap">
+                                            <span>Track B</span>
+                                        </div>
+                                        <canvas id="faaCmpSgB" height="200">
+                                        </canvas>
+                                    </div>
+                                    <div class="faa-foot" id="faaFootC"></div>
+                                </div>
+                            </div>
+                        </div>
+
+  </section>
+
+  <section class="wrap section" aria-labelledby="meas-h">
+    <h2 class="section-title" id="meas-h">What it measures</h2>
+    <div class="prose">
+      <ul>
+        <li><span class="hi">LUFS</span> — integrated, short-term (3&nbsp;s) and momentary (400&nbsp;ms), to ITU-R BS.1770-4 / EBU R128.</li>
+        <li><span class="hi">True Peak (dBTP)</span> — oversampled inter-sample peaks, with clipping highlighted above −1&nbsp;dBTP.</li>
+        <li><span class="hi">Dynamics</span> — loudness range and crest, so you can see how squashed or open a master is.</li>
+        <li><span class="hi">Key &amp; tempo</span> — musical key on a Camelot wheel (with mix-compatible keys), chroma profile, and a draggable tempo grid / BPM.</li>
+        <li><span class="hi">Genre &amp; similar tracks</span> — an optional neural pass (runs in-browser) that names the style and finds close-sounding tracks.</li>
+        <li><span class="hi">Spectrum &amp; spectrogram</span> — average magnitude spectrum and a full spectrogram, plus a live real-time spectrum and VU on playback.</li>
+        <li><span class="hi">A/B compare</span> — line two masters up side by side and export the report to PNG or PDF.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="wrap section" aria-labelledby="tg-h">
+    <h2 class="section-title" id="tg-h">Streaming loudness targets</h2>
+    <div class="prose">
+      <p>Most platforms normalize to an integrated-loudness target. The analyzer checks your master against the common ones:</p>
+      <ul>
+        <li>Spotify, YouTube, Amazon — around <span class="hi">−14 LUFS</span>.</li>
+        <li>Apple Music — around <span class="hi">−16 LUFS</span>.</li>
+        <li>Podcast platforms — around <span class="hi">−16 LUFS</span>.</li>
+        <li>Broadcast (EBU R128) — <span class="hi">−23 LUFS</span>.</li>
+      </ul>
+      <p class="eyebrow">Aim a touch under the target and keep True Peak below −1&nbsp;dBTP so lossy codecs don't clip on playback.</p>
+    </div>
+  </section>
+
+  <section class="wrap section" aria-labelledby="faq-h">
+    <h2 class="section-title" id="faq-h">FAQ</h2>
+    <div class="prose">
+      <h2 style="font-size:clamp(13px,2.4vw,17px)">Does my file get uploaded to a server?</h2>
+      <p>No. The whole analysis runs locally in your browser with the Web Audio API and WebAssembly. Your audio never leaves your device.</p>
+      <h2 style="font-size:clamp(13px,2.4vw,17px)">How is LUFS different from dBFS?</h2>
+      <p>dBFS is the peak level of the loudest sample. LUFS is perceived loudness — it factors in time and the ear's frequency response. Two tracks with the same dBFS peak can sound very different in LUFS.</p>
+      <h2 style="font-size:clamp(13px,2.4vw,17px)">Which formats are supported?</h2>
+      <p>WAV, FLAC, MP3, AAC/M4A, OGG, OPUS and AIFF — anything your browser can decode.</p>
+      <h2 style="font-size:clamp(13px,2.4vw,17px)">How accurate is it?</h2>
+      <p>Loudness follows ITU-R BS.1770-4 / EBU R128 and True Peak uses oversampling, so results track professional meters closely. Tiny differences can come from the decoder and resampling.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap footer">
+  ZALTURI / noface project / music save us
+  <div class="row">
+    <a href="/tools/">Tools</a> ·
+    <a href="/">Home</a> ·
+    <a href="/about/">Manifesto</a> ·
+    <a href="/arcade/">Arcade</a> ·
+    <a href="https://soundcloud.com/zalturi" target="_blank" rel="noopener">SoundCloud</a>
+  </div>
+</footer>
+
+<script defer src="/tools/analyzer/cdn/lib/analyzer-app-v5.js"></script>
+</body>
+</html>

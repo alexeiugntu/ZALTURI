@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Free Online Guitar Tuner — chromatic, bass, ukulele, violin | ZALTURI</title>
+<meta name="description" content="Free in-browser instrument tuner with live mic pitch detection — guitar, bass, ukulele, violin, cello and chromatic, with cents and a selectable reference A (432-443 Hz). Nothing is uploaded.">
+<link rel="canonical" href="https://zalturi.com/tools/tuner/">
+<meta name="theme-color" content="#1a1209">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ZALTURI">
+<meta property="og:title" content="Free Online Guitar Tuner — chromatic, bass, ukulele, violin | ZALTURI">
+<meta property="og:description" content="Free in-browser instrument tuner with live mic pitch detection — guitar, bass, ukulele, violin, cello and chromatic, with cents and a selectable reference A (432-443 Hz). Nothing is uploaded.">
+<meta property="og:url" content="https://zalturi.com/tools/tuner/">
+<meta property="og:image" content="https://zalturi.com/assets/img/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Free Online Guitar Tuner — chromatic, bass, ukulele, violin | ZALTURI">
+<meta name="twitter:description" content="Free in-browser instrument tuner with live mic pitch detection — guitar, bass, ukulele, violin, cello and chromatic, with cents and a selectable reference A (432-443 Hz). Nothing is uploaded.">
+<meta name="twitter:image" content="https://zalturi.com/assets/img/og.png">
+<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/assets/img/favicon.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preload" href="/assets/fonts/press-start-2p.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/vt323.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/css/base.css">
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@graph":[
+    {"@type":"BreadcrumbList","itemListElement":[
+      {"@type":"ListItem","position":1,"name":"Home","item":"https://zalturi.com/"},
+      {"@type":"ListItem","position":2,"name":"Tools","item":"https://zalturi.com/tools/"},
+      {"@type":"ListItem","position":3,"name":"Guitar tuner","item":"https://zalturi.com/tools/tuner/"}]},
+    {"@type":"SoftwareApplication","name":"ZALTURI Guitar Tuner","url":"https://zalturi.com/tools/tuner/",
+     "applicationCategory":"MultimediaApplication","operatingSystem":"Any (web browser)",
+     "description":"Free in-browser chromatic instrument tuner with live microphone pitch detection for guitar, bass, ukulele, violin and cello.",
+     "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+  ]
+}
+</script>
+</head>
+
+<body class="crt">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="wrap nav">
+  <a class="logo" href="/">ZALTURI</a>
+  <nav class="menu" aria-label="Primary">
+    <a href="/#listen">Listen</a>
+    <a href="https://disk.yandex.ru/d/LQxYDO_lA7LHRQ" target="_blank" rel="noopener">Download</a>
+    <a href="/about/">Manifesto</a>
+    <a href="/arcade/">Arcade</a>
+    <a href="/tools/" aria-current="page">Tools</a>
+  </nav>
+</header>
+
+<main id="main">
+  <nav class="wrap crumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/tools/">Tools</a> / Guitar tuner</nav>
+
+  <section class="wrap section" aria-labelledby="t-h">
+    <p class="kicker"><span class="blip" aria-hidden="true"></span> in-browser tool</p>
+    <h1 class="h-title" style="font-size:clamp(24px,5vw,46px)" id="t-h">Guitar tuner</h1>
+    <p class="prose lead" style="margin-top:16px">Tune by ear or by needle. Pick an instrument, play one string at a time, and the needle shows exactly how far off you are in cents. Live mic pitch detection, all in your browser.</p>
+  </section>
+
+  <section class="wrap" style="padding-bottom:34px">
+<style>
+  #ztnr .head .t1, #ztnr .btn, #ztnr .head .brand, #ztnr .recbtn, #ztnr .dl { font-family: var(--font-pixel) !important; line-height:1.3 !important; }
+  #ztnr .head .t1 { font-size: clamp(22px,6vw,34px) !important; }
+  #ztnr .note { font-family: var(--font-pixel) !important; font-size: clamp(40px,12vw,72px) !important; height:auto !important; padding:6px 0 !important; }
+  #ztnr .timer { font-family: var(--font-pixel) !important; font-size: clamp(22px,6vw,34px) !important; }
+  #ztnr .card, #ztnr .btn, #ztnr .recbtn, #ztnr .upload, #ztnr .auto, #ztnr .dl, #ztnr .player, #ztnr select, #ztnr .chip, #ztnr .vu, #ztnr input[type=range] { border-radius: 0 !important; }
+  #ztnr .card { border: 3px solid var(--z-border) !important; box-shadow: 6px 6px 0 #000, 0 0 0 2px rgba(212,168,67,0.08) inset !important; }
+</style>
+
+<script id="ztnr-worklet" type="text/worklet">
+class TunerProcessor extends AudioWorkletProcessor {
+  constructor(){
+    super();
+    this.sr=sampleRate; this.sd=this.sr/2;
+    this.buf=new Float32Array(4096); this.pos=0; this.hop=1024;
+    this.W=2048; this.tauMax=1024;
+    this.xd=new Float32Array(this.W); this.d=new Float32Array(this.tauMax); this.cm=new Float32Array(this.tauMax);
+  }
+  yin(){
+    const xd=this.xd, W=this.W;
+    for(let i=0;i<W;i++) xd[i]=0.5*(this.buf[2*i]+this.buf[2*i+1]); // прореживание ×2
+    let rms=0; for(let i=0;i<W;i++) rms+=xd[i]*xd[i]; rms=Math.sqrt(rms/W);
+    if(rms<0.0028){ this.port.postMessage({f0:0,cl:0}); return; }
+    const tauMax=this.tauMax,d=this.d,cm=this.cm;
+    for(let tau=1;tau<tauMax;tau++){ let s=0; for(let i=0;i<tauMax;i++){const df=xd[i]-xd[i+tau]; s+=df*df;} d[tau]=s; }
+    cm[0]=1; let run=0; for(let tau=1;tau<tauMax;tau++){ run+=d[tau]; cm[tau]=run>0?d[tau]*tau/run:1; }
+    // первый провал ниже порога → локальный минимум
+    let tau=-1; for(let t=2;t<tauMax;t++){ if(cm[t]<0.15){ while(t+1<tauMax&&cm[t+1]<cm[t])t++; tau=t; break; } }
+    // только уверенные определения; иначе — «нет ноты» (лучше, чем октава/мусор)
+    if(tau<2 || cm[tau]>0.2){ this.port.postMessage({f0:0,cl:0}); return; }
+    const a=cm[tau-1],b=cm[tau],c=cm[tau+1],den=a-2*b+c; let tt=tau; if(den!==0)tt=tau+0.5*(a-c)/den;
+    const f=this.sd/tt;
+    this.port.postMessage({f0:(f>25&&f<1500)?f:0, cl:1-cm[tau]});
+  }
+  process(inputs){
+    const ch=inputs[0]&&inputs[0][0]?inputs[0][0]:null; const n=ch?ch.length:128;
+    for(let i=0;i<n;i++){ this.buf[this.pos++]=ch?ch[i]:0; if(this.pos>=4096){ this.yin(); this.buf.copyWithin(0,this.hop,4096); this.pos=4096-this.hop; } }
+    return true;
+  }
+}
+registerProcessor('ztnr-pitch', TunerProcessor);
+</script>
+
+<style>
+/* fonts via base.css */
+
+.ztnr{
+  --bg:#16100a; --panel:#231a0e; --panel2:#2e2210; --line:#3d2e14;
+  --txt:#f5e6c8; --dim:#a08a5e; --accent:#e0520d; --good:#4f8a3c; --glow:rgba(224,82,13,.5); --goodglow:rgba(79,138,60,.5);
+  max-width:560px; margin:0 auto; padding:6px;
+  font-family:var(--font-term); color:var(--txt); -webkit-font-smoothing:antialiased; text-align:left;
+}
+.ztnr *{box-sizing:border-box; margin:0; padding:0}
+.ztnr .head{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:16px}
+.ztnr .head .t1{font-family:var(--font-pixel); font-weight:800; font-size:clamp(28px,7vw,44px); line-height:.92; letter-spacing:-.03em}
+.ztnr .head .t1 .dot{color:var(--accent)}
+.ztnr .head .sub{font-size:11px; color:var(--dim); text-align:right; letter-spacing:.04em; text-transform:uppercase; line-height:1.3}
+
+.ztnr .card{background:linear-gradient(180deg,var(--panel),#0c0804); border:1px solid var(--line); border-radius:18px; padding:22px; box-shadow:0 30px 80px -40px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.03)}
+
+.ztnr .gauge{text-align:center; padding:4px 0 0}
+.ztnr .note{font-family:var(--font-pixel); font-weight:800; font-size:92px; line-height:.92; letter-spacing:-.04em; color:var(--dim); height:96px; display:flex; align-items:center; justify-content:center; gap:3px; transition:color .2s, text-shadow .2s}
+.ztnr .note.on{color:var(--txt)}
+.ztnr .note.good{color:var(--good); text-shadow:0 0 26px var(--goodglow)}
+.ztnr .note .oct{font-size:26px; color:var(--dim); align-self:flex-end; margin-bottom:14px}
+.ztnr .note .acc{color:var(--accent)}
+.ztnr .cents{font-size:13px; color:var(--dim); height:18px; margin-top:2px; letter-spacing:.06em}
+
+.ztnr .meter{position:relative; height:58px; margin-top:14px}
+.ztnr .meter .track{position:absolute; left:0; right:0; top:30px; height:2px; background:var(--line)}
+.ztnr .meter .zone{position:absolute; top:18px; height:26px; left:calc(50% - 7%); width:14%; background:rgba(79,138,60,.12); border-left:1px solid rgba(79,138,60,.4); border-right:1px solid rgba(79,138,60,.4); border-radius:3px}
+.ztnr .meter .center{position:absolute; left:50%; top:14px; height:34px; width:2px; background:var(--good); transform:translateX(-50%); opacity:.8}
+.ztnr .meter .needle{position:absolute; top:10px; height:42px; width:4px; border-radius:3px; left:50%; background:var(--accent); box-shadow:0 0 16px var(--glow); transform:translateX(-50%); transition:background .15s, box-shadow .15s, opacity .25s; opacity:0}
+.ztnr .meter .needle.good{background:var(--good); box-shadow:0 0 16px var(--goodglow)}
+.ztnr .meter .ticks{position:absolute; left:0; right:0; bottom:0; display:flex; justify-content:space-between; font-size:9px; color:var(--dim)}
+.ztnr .arrows{display:flex; justify-content:space-between; font-size:11px; color:var(--dim); margin-top:2px; letter-spacing:.05em; text-transform:uppercase}
+
+.ztnr .strings{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:18px}
+.ztnr .chip{font-size:13px; padding:8px 12px; border-radius:10px; background:var(--panel2); border:1px solid var(--line); color:var(--dim); letter-spacing:.04em; transition:all .15s}
+.ztnr .chip.active{color:var(--txt); border-color:var(--accent); box-shadow:0 0 0 3px rgba(224,82,13,.16)}
+.ztnr .chip.good{color:#0c0804; background:var(--good); border-color:var(--good)}
+
+.ztnr .selrow{display:grid; grid-template-columns:1.4fr 1fr; gap:12px; margin-top:20px}
+.ztnr .row{display:grid; gap:7px}
+.ztnr .lab{font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--dim)}
+.ztnr select{width:100%; background:var(--panel2); color:var(--txt); border:1px solid var(--line); border-radius:10px; padding:11px 12px; font-family:inherit; font-size:13px; cursor:pointer}
+.ztnr select:focus{outline:none; border-color:var(--accent)}
+
+.ztnr .btn{width:100%; margin-top:16px; padding:16px; border-radius:13px; border:none; cursor:pointer; font-family:var(--font-pixel); font-weight:800; font-size:16px; background:var(--accent); color:#0c0804; box-shadow:0 12px 30px -10px var(--glow); transition:transform .12s,background .2s,box-shadow .2s}
+.ztnr .btn:hover{transform:translateY(-1px)}
+.ztnr .btn.on{background:var(--panel2); color:var(--txt); border:1px solid var(--line); box-shadow:none}
+.ztnr .status{text-align:center; font-size:11px; color:var(--dim); margin-top:12px; letter-spacing:.04em; min-height:14px; line-height:1.4}
+.ztnr .foot{font-size:10px; color:var(--dim); text-align:center; margin-top:14px; opacity:.65; line-height:1.5}
+</style>
+
+<div class="ztnr" id="ftn">
+  <div class="head">
+    <div class="t1">TUNER<span class="dot">.</span></div>
+    <div class="sub">instrument<br>tuner</div>
+  </div>
+
+  <div class="card">
+    <div class="gauge">
+      <div class="note" id="ftn-note">—</div>
+      <div class="cents" id="ftn-cents"></div>
+      <div class="meter">
+        <div class="track"></div>
+        <div class="zone"></div>
+        <div class="center"></div>
+        <div class="needle" id="ftn-needle"></div>
+        <div class="ticks"><span>-50</span><span>0</span><span>+50</span></div>
+      </div>
+      <div class="arrows"><span>♭ flat</span><span id="ftn-state"></span><span>sharp ♯</span></div>
+    </div>
+
+    <div class="strings" id="ftn-strings"></div>
+
+    <div class="selrow">
+      <div class="row">
+    <a href="/tools/">Tools</a> ·<div class="lab">Instrument</div>
+        <select id="ftn-inst">
+          <option value="chromatic">Chromatic</option>
+          <option value="guitar">Guitar (EADGBE)</option>
+          <option value="bass">Bass (EADG)</option>
+          <option value="ukulele">Ukulele (GCEA)</option>
+          <option value="violin">Violin (GDAE)</option>
+          <option value="cello">Cello (CGDA)</option>
+        </select>
+      </div>
+      <div class="row"><div class="lab">Reference A</div>
+        <select id="ftn-ref">
+          <option>432</option><option>435</option><option>438</option>
+          <option selected>440</option><option>441</option><option>442</option><option>443</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn" id="ftn-toggle">▶ Enable microphone</button>
+    <div class="status" id="ftn-status">Tap, pick an instrument and play one string at a time</div>
+  </div>
+  <div class="foot">Accuracy depends on your mic and background noise. Play one note at a time.</div>
+</div>
+
+<script>
+(function(){
+  const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const INSTR={ guitar:[40,45,50,55,59,64], bass:[28,33,38,43], ukulele:[67,60,64,69], violin:[55,62,69,76], cello:[36,43,50,57] };
+  const $=id=>document.getElementById(id);
+
+  let ctx,stream,source,node,zeroGain,running=false,refA=440;
+  const noteEl=$('ftn-note'), centsEl=$('ftn-cents'), needle=$('ftn-needle'),
+        stateEl=$('ftn-state'), status=$('ftn-status'), toggle=$('ftn-toggle'), stringsEl=$('ftn-strings');
+
+  let dispF=0, haveF=false, hist=[], lastGood=0, lockMidi=null;
+  let targetX=50, needleX=50, visible=false, goodNow=false, lastHTML='', lastActive=-1, lastGoodChip=false;
+
+  const midiToName=m=>{const n=NOTES[((m%12)+12)%12], o=Math.floor(m/12)-1; return {nm:n,oct:o};};
+
+  function renderStrings(active,good){
+    const inst=$('ftn-inst').value;
+    if(inst==='chromatic'){ if(lastActive!==-2){ stringsEl.innerHTML=''; lastActive=-2; } return; }
+    if(active===lastActive && good===lastGoodChip) return;
+    lastActive=active; lastGoodChip=good;
+    stringsEl.innerHTML=INSTR[inst].map((m,i)=>{
+      const t=midiToName(m); const cls='chip'+(i===active?(good?' good':' active'):'');
+      return '<span class="'+cls+'">'+t.nm+t.oct+'</span>';
+    }).join('');
+  }
+  function setNote(html,cls){ const full=cls+'|'+html; if(full!==lastHTML){ lastHTML=full; noteEl.innerHTML=html; noteEl.className='note '+(cls||''); } }
+  function setIdle(){ lockMidi=null; setNote('—',''); centsEl.textContent=''; stateEl.textContent=''; renderStrings(-1,false); }
+
+  function compute(f){
+    const midiF=69+12*Math.log2(f/refA);
+    const inst=$('ftn-inst').value;
+    let refMidi, cents, active=-1;
+    if(inst==='chromatic'){
+      // гистерезис: не переключаем ноту, пока явно не зашли в соседнюю
+      if(lockMidi!==null && Math.abs(midiF-lockMidi)<0.62) refMidi=lockMidi; else refMidi=Math.round(midiF);
+      lockMidi=refMidi; cents=(midiF-refMidi)*100;
+    } else {
+      let bd=1e9; INSTR[inst].forEach((m,i)=>{ const dd=Math.abs(midiF-m); if(dd<bd){bd=dd;active=i;refMidi=m;} }); cents=(midiF-refMidi)*100;
+    }
+    const t=midiToName(refMidi), good=Math.abs(cents)<5;
+    goodNow=good;
+    setNote((t.nm.includes('#')?t.nm[0]+'<span class="acc">#</span>':t.nm)+'<span class="oct">'+t.oct+'</span>', good?'good':'on');
+    centsEl.textContent=f.toFixed(1)+' Hz · '+(cents>=0?'+':'')+cents.toFixed(0)+' cents';
+    stateEl.textContent=good?'in tune ✓':(cents<0?'tune up':'tune down'); stateEl.style.color=good?'var(--good)':'var(--dim)';
+    targetX=Math.max(0,Math.min(100,50+cents));
+    renderStrings(active,good);
+  }
+
+  function onPitch(f0,cl){
+    const now=performance.now();
+    if(f0>0 && cl>0.4){
+      hist.push(f0); if(hist.length>7) hist.shift();
+      const med=[...hist].sort((a,b)=>a-b)[hist.length>>1];
+      if(!haveF){ dispF=med; haveF=true; }
+      else{
+        const semis=Math.abs(12*Math.log2(med/dispF));
+        const alpha = semis>0.6 ? 0.5 : 0.09;  // новый звук — снап, подстройка — плавно
+        dispF = dispF*(1-alpha) + med*alpha;
+      }
+      lastGood=now; visible=true; compute(dispF);
+    } else if(now-lastGood>650){
+      visible=false; haveF=false; hist=[]; setIdle();
+    }
+  }
+
+  function loop(){
+    needleX += (targetX-needleX)*0.13;
+    needle.style.left=needleX+'%';
+    needle.style.opacity = visible?1:0;
+    needle.className = 'needle'+(visible&&goodNow?' good':'');
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  async function start(){
+    try{
+      ctx=new (window.AudioContext||window.webkitAudioContext)();
+      try{const b=ctx.createBuffer(1,1,22050),s=ctx.createBufferSource();s.buffer=b;s.connect(ctx.destination);s.start(0);}catch(e){}
+      ctx.resume();
+      status.textContent='Requesting microphone…';
+      await ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([$('ztnr-worklet').textContent],{type:'application/javascript'})));
+      stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+      source=ctx.createMediaStreamSource(stream);
+      node=new AudioWorkletNode(ctx,'ztnr-pitch',{numberOfInputs:1,numberOfOutputs:1,outputChannelCount:[1]});
+      node.port.onmessage=e=>{ if(running) onPitch(e.data.f0,e.data.cl); };
+      zeroGain=ctx.createGain(); zeroGain.gain.value=0;
+      source.connect(node); node.connect(zeroGain); zeroGain.connect(ctx.destination); // фикс входа Safari, без звука
+      await ctx.resume();
+      running=true; toggle.textContent='■ Stop'; toggle.classList.add('on');
+      status.textContent='Play one string at a time — the needle shows which way to tune';
+    }catch(err){
+      status.textContent='Error: '+(err.message||err.name)+'. Needs HTTPS and mic access.';
+    }
+  }
+  function stop(){
+    running=false; visible=false; haveF=false; hist=[]; lastActive=-1;
+    try{ source&&source.disconnect(); node&&node.disconnect(); zeroGain&&zeroGain.disconnect(); }catch(e){}
+    try{ stream&&stream.getTracks().forEach(t=>t.stop()); ctx&&ctx.close(); }catch(e){}
+    ctx=node=source=zeroGain=stream=null;
+    toggle.textContent='▶ Enable microphone'; toggle.classList.remove('on');
+    status.textContent='Stopped'; setIdle();
+  }
+
+  $('ftn-ref').onchange=e=>{ refA=+e.target.value; };
+  $('ftn-inst').onchange=()=>{ lastActive=-1; renderStrings(-1,false); };
+  toggle.onclick=()=> running?stop():start();
+  renderStrings(-1,false);
+})();
+</script>
+  </section>
+
+  <section class="wrap section"><p class="note" style="text-align:left;max-width:760px;margin:0">How it works: allow microphone access, choose your instrument (or chromatic) and reference pitch, then play one string at a time. The big note and the needle show the detected pitch and how many cents sharp or flat you are; it turns green when you are in tune. Everything runs locally with the Web Audio API - nothing is recorded or uploaded.</p></section>
+</main>
+
+<footer class="wrap footer">
+  ZALTURI / noface project / music save us
+  <div class="row">
+    <a href="/tools/">Tools</a> ·
+    <a href="/">Home</a> ·
+    <a href="/about/">Manifesto</a> ·
+    <a href="https://soundcloud.com/zalturi" target="_blank" rel="noopener">SoundCloud</a>
+  </div>
+</footer>
+</body>
+</html>

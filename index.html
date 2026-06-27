@@ -79,6 +79,7 @@
     <a href="https://disk.yandex.ru/d/LQxYDO_lA7LHRQ" target="_blank" rel="noopener">Download</a>
     <a href="/about/">Manifesto</a>
     <a href="/arcade/">Arcade</a>
+    <a href="/tools/">Tools</a>
   </nav>
 </header>
 
@@ -113,19 +114,40 @@
   <!-- PROJECT FILE -->
   <section class="wrap section" aria-labelledby="file-h">
     <h2 class="section-title" id="file-h">Project file</h2>
-    <div class="grid-3">
-      <article class="card">
+    <div class="grid-4">
+      <a class="card" href="/about/">
         <h3>01 / identity</h3>
         <p>No face. No names. Just signal in the dark. Anyone can be ZALTURI.</p>
-      </article>
-      <article class="card">
+      </a>
+      <a class="card" href="#listen">
         <h3>02 / sound</h3>
         <p>Bootlegs, edits and remixes of whatever's trending. Made for the joke, shared for free.</p>
-      </article>
-      <article class="card">
+      </a>
+      <a class="card" href="/arcade/">
         <h3>03 / arcade</h3>
-        <p>A dirty little arcade cabinet. Pixels, high scores, controlled chaos.</p>
-      </article>
+        <p>A dirty little arcade cabinet. Pixels, high scores, and a leaderboard worth losing to.</p>
+      </a>
+      <a class="card" href="/tools/">
+        <h3>04 / tools</h3>
+        <p>Free in-browser audio tools — read your sound like an engineer. Analyzer now, more soon.</p>
+      </a>
+    </div>
+  </section>
+
+  <!-- PANEL-HOUSE EQUALIZER -->
+  <section class="wrap section" aria-labelledby="block-h">
+    <div class="eq-card">
+      <div class="eq-top">
+        <div>
+          <h2 class="section-title" id="block-h" style="margin-bottom:8px">The block</h2>
+          <p class="eq-sub">Our panel house. Press play and the windows wake up with the music — one column per frequency, slow and warm.</p>
+        </div>
+        <span class="eq-live"><span class="dot" aria-hidden="true"></span><span class="txt">idle</span></span>
+      </div>
+      <div class="eq-screen" id="eq-screen">
+        <canvas id="eq-canvas" role="img" aria-label="Pixel-art Soviet panel house whose windows light up like an equalizer when the music plays"></canvas>
+      </div>
+      <p class="eq-hint">press play below · or tap the house</p>
     </div>
   </section>
 
@@ -135,14 +157,14 @@
       <div class="music-top">
         <div>
           <h2 class="section-title" id="listen-h">Listen first</h2>
-          <p>Hit play. Scan the pack. If the signal hits — take the files. No login, no paywall, no algorithm deciding for you.</p>
+          <p>Hit play. Scan the pack. If the signal hits — take the files. Nobody makes you log in, and no algorithm decides what you hear next.</p>
         </div>
         <span class="badge">remix pack</span>
       </div>
 
       <div class="player-shell">
         <div class="player-frame">
-          <iframe title="ZALTURI remix pack — SoundCloud player" loading="lazy" scrolling="no"
+          <iframe id="sc-player" title="ZALTURI remix pack — SoundCloud player" loading="lazy" scrolling="no"
             frameborder="no" allow="autoplay; encrypted-media"
             src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/soundcloud%253Aplaylists%253A2258423573&color=%23c0440a&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=false"></iframe>
         </div>
@@ -161,7 +183,7 @@
     <h2 class="section-title" id="why-h">Why this exists</h2>
     <div class="prose">
       <p class="lead">A few independent musicians making whatever they want — edits, bootlegs, and jokes about the trends we're all stuck in.</p>
-      <p>Irony, post-irony, meta-irony, and the freedom to not explain the difference. No label, no algorithm, no price tag. Think of it as an exit door from the streaming machine: <span class="hi">music as an outlet, not a product.</span></p>
+      <p>Irony, post-irony, meta-irony, and the freedom to not explain the difference. No label, no algorithm, no price tag. It's what music sounds like when nobody's trying to sell it to you: <span class="hi">an outlet, not a product.</span></p>
       <p><a class="btn btn-ghost" href="/about/" style="margin-top:6px">Read the manifesto →</a></p>
     </div>
   </section>
@@ -178,6 +200,7 @@
 <footer class="wrap footer">
   ZALTURI / noface project / music save us
   <div class="row">
+    <a href="/tools/">Tools</a> ·
     <a href="https://soundcloud.com/zalturi" target="_blank" rel="noopener">SoundCloud</a> ·
     <a href="https://disk.yandex.ru/d/LQxYDO_lA7LHRQ" target="_blank" rel="noopener">Download pack</a> ·
     <a href="/about/">Manifesto</a> ·
@@ -186,5 +209,7 @@
 </footer>
 
 <script src="/assets/js/pixelate.js" defer></script>
+<script src="https://w.soundcloud.com/player/api.js" defer></script>
+<script src="/assets/js/equalizer.js" defer></script>
 </body>
 </html>

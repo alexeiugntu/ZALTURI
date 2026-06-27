@@ -245,6 +245,13 @@
     .rn-logo { font-size: 15px; }
     #touch button { width: 64px; height: 64px; font-size: 17px; }
   }
+  /* keep the GAME OVER / READY overlay inside the short mobile screen */
+  @media (max-width: 560px) {
+    #overlay { padding: 4px; }
+    #overlay .ovh { font-size: 11px; line-height: 1.25; }
+    #overlay .score-big { font-size: 11px; margin-top: 6px; }
+    #overlay p { font-size: 7px; line-height: 1.5; margin-top: 5px; }
+  }
 
 </style>
 </head>
@@ -259,6 +266,7 @@
     <a href="https://disk.yandex.ru/d/LQxYDO_lA7LHRQ" target="_blank" rel="noopener">Download</a>
     <a href="/about/">Manifesto</a>
     <a href="/arcade/" aria-current="page">Arcade</a>
+    <a href="/tools/">Tools</a>
   </nav>
 </header>
 
@@ -317,6 +325,7 @@
 <footer class="wrap footer">
   ZALTURI / noface project / music save us
   <div class="row">
+    <a href="/tools/">Tools</a> ·
     <a href="https://soundcloud.com/zalturi" target="_blank" rel="noopener">SoundCloud</a> ·
     <a href="/arcade/">Arcade</a> ·
     <a href="/about/">Manifesto</a> ·

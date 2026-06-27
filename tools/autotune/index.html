@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Free Online Autotune — pitch correction in your browser | ZALTURI</title>
+<meta name="description" content="Free browser autotune - record or upload a vocal, snap it to a key and scale, add reverb and download the WAV. Real-time pitch correction, 100% local, nothing uploaded.">
+<link rel="canonical" href="https://zalturi.com/tools/autotune/">
+<meta name="theme-color" content="#1a1209">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ZALTURI">
+<meta property="og:title" content="Free Online Autotune — pitch correction in your browser | ZALTURI">
+<meta property="og:description" content="Free browser autotune - record or upload a vocal, snap it to a key and scale, add reverb and download the WAV. Real-time pitch correction, 100% local, nothing uploaded.">
+<meta property="og:url" content="https://zalturi.com/tools/autotune/">
+<meta property="og:image" content="https://zalturi.com/assets/img/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Free Online Autotune — pitch correction in your browser | ZALTURI">
+<meta name="twitter:description" content="Free browser autotune - record or upload a vocal, snap it to a key and scale, add reverb and download the WAV. Real-time pitch correction, 100% local, nothing uploaded.">
+<meta name="twitter:image" content="https://zalturi.com/assets/img/og.png">
+<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/assets/img/favicon.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preload" href="/assets/fonts/press-start-2p.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/vt323.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/css/base.css">
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@graph":[
+    {"@type":"BreadcrumbList","itemListElement":[
+      {"@type":"ListItem","position":1,"name":"Home","item":"https://zalturi.com/"},
+      {"@type":"ListItem","position":2,"name":"Tools","item":"https://zalturi.com/tools/"},
+      {"@type":"ListItem","position":3,"name":"Autotune","item":"https://zalturi.com/tools/autotune/"}]},
+    {"@type":"SoftwareApplication","name":"ZALTURI Autotune","url":"https://zalturi.com/tools/autotune/",
+     "applicationCategory":"MultimediaApplication","operatingSystem":"Any (web browser)",
+     "description":"Free in-browser autotune: record or upload a vocal, snap it to a key and scale, add reverb and download the WAV. Real-time pitch correction, fully local.",
+     "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+  ]
+}
+</script>
+</head>
+
+<body class="crt">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="wrap nav">
+  <a class="logo" href="/">ZALTURI</a>
+  <nav class="menu" aria-label="Primary">
+    <a href="/#listen">Listen</a>
+    <a href="https://disk.yandex.ru/d/LQxYDO_lA7LHRQ" target="_blank" rel="noopener">Download</a>
+    <a href="/about/">Manifesto</a>
+    <a href="/arcade/">Arcade</a>
+    <a href="/tools/" aria-current="page">Tools</a>
+  </nav>
+</header>
+
+<main id="main">
+  <nav class="wrap crumb" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/tools/">Tools</a> / Autotune</nav>
+
+  <section class="wrap section" aria-labelledby="t-h">
+    <p class="kicker"><span class="blip" aria-hidden="true"></span> in-browser tool</p>
+    <h1 class="h-title" style="font-size:clamp(24px,5vw,46px)" id="t-h">Autotune</h1>
+    <p class="prose lead" style="margin-top:16px">Record or drop a vocal, pick a key and scale, and snap it to pitch - then add reverb and download the WAV. It all runs in your browser; nothing is uploaded.</p>
+  </section>
+
+  <section class="wrap" style="padding-bottom:34px">
+<style>
+  #zatr .head .t1, #zatr .btn, #zatr .head .brand, #zatr .recbtn, #zatr .dl { font-family: var(--font-pixel) !important; line-height:1.3 !important; }
+  #zatr .head .t1 { font-size: clamp(22px,6vw,34px) !important; }
+  #zatr .note { font-family: var(--font-pixel) !important; font-size: clamp(40px,12vw,72px) !important; height:auto !important; padding:6px 0 !important; }
+  #zatr .timer { font-family: var(--font-pixel) !important; font-size: clamp(22px,6vw,34px) !important; }
+  #zatr .card, #zatr .btn, #zatr .recbtn, #zatr .upload, #zatr .auto, #zatr .dl, #zatr .player, #zatr select, #zatr .chip, #zatr .vu, #zatr input[type=range] { border-radius: 0 !important; }
+  #zatr .card { border: 3px solid var(--z-border) !important; box-shadow: 6px 6px 0 #000, 0 0 0 2px rgba(212,168,67,0.08) inset !important; }
+</style>
+
+<script id="zatr-worklet" type="text/worklet">
+class RecProcessor extends AudioWorkletProcessor {
+  process(inputs){
+    const inp = inputs[0];
+    if (inp && inp[0]) this.port.postMessage(inp[0].slice(0));
+    return true;
+  }
+}
+registerProcessor('zatr-rec', RecProcessor);
+</script>
+
+<style>
+/* fonts via base.css */
+
+.zatr{
+  --bg:#16100a; --panel:#231a0e; --panel2:#2e2210; --line:#3d2e14;
+  --txt:#f5e6c8; --dim:#a08a5e; --accent:#e0520d; --good:#4f8a3c; --glow:rgba(224,82,13,.5);
+  max-width:560px; margin:0 auto; padding:6px;
+  font-family:var(--font-term); color:var(--txt); -webkit-font-smoothing:antialiased; text-align:left;
+}
+.zatr *{box-sizing:border-box; margin:0; padding:0}
+.zatr .head{margin-bottom:18px}
+.zatr .head .brand{font-family:var(--font-pixel); font-weight:800; font-size:clamp(20px,5.2vw,32px); line-height:1.02; letter-spacing:-.02em}
+.zatr .head .brand .dot{color:var(--accent)}
+
+.zatr .card{background:linear-gradient(180deg,var(--panel),#0c0804); border:1px solid var(--line); border-radius:18px; padding:22px; box-shadow:0 30px 80px -40px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.03)}
+
+.zatr .stage{text-align:center; padding:6px 0 4px}
+.zatr .timer{font-family:var(--font-pixel); font-weight:800; font-size:46px; letter-spacing:-.02em; height:50px; line-height:1; display:flex; align-items:center; justify-content:center; gap:10px}
+.zatr .timer .rec-dot{width:14px; height:14px; border-radius:50%; background:var(--accent); box-shadow:0 0 18px var(--glow); opacity:0}
+.zatr.is-rec .timer .rec-dot{opacity:1; animation:fatr-blink 1s steps(2,start) infinite}
+@keyframes fatr-blink{50%{opacity:.25}}
+.zatr .hint{font-size:12px; color:var(--dim); margin-top:6px; letter-spacing:.03em; line-height:1.45}
+
+.zatr .vu{height:8px; border-radius:6px; background:var(--panel2); border:1px solid var(--line); overflow:hidden; margin:16px 0 4px}
+.zatr .vu-fill{height:100%; width:0%; background:linear-gradient(90deg,var(--good),var(--accent)); transition:width .07s linear; border-radius:6px}
+
+.zatr .selrow{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px}
+.zatr .row{display:grid; gap:7px}
+.zatr .lab{display:flex; justify-content:space-between; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--dim)}
+.zatr .lab .val{color:var(--txt)}
+.zatr select{width:100%; background:var(--panel2); color:var(--txt); border:1px solid var(--line); border-radius:10px; padding:11px 12px; font-family:inherit; font-size:13px; cursor:pointer}
+.zatr select:focus{outline:none; border-color:var(--accent)}
+.zatr .auto{margin-top:10px; width:100%; padding:10px; border-radius:10px; background:transparent; border:1px dashed rgba(79,138,60,.45); color:var(--good); font-family:inherit; font-size:12px; cursor:pointer; letter-spacing:.04em; transition:background .2s,color .2s}
+.zatr .auto:hover{background:rgba(79,138,60,.12); color:var(--txt)}
+
+.zatr .recbtn{width:100%; margin-top:16px; padding:17px; border-radius:13px; border:none; cursor:pointer; font-family:var(--font-pixel); font-weight:800; font-size:17px; background:var(--accent); color:#0c0804; box-shadow:0 12px 30px -10px var(--glow); transition:transform .12s,background .2s,box-shadow .2s}
+.zatr .recbtn:hover{transform:translateY(-1px)}
+.zatr .recbtn.stop{background:var(--panel2); color:var(--txt); border:1px solid var(--line); box-shadow:none}
+.zatr .upload{width:100%; margin-top:10px; padding:14px 12px; border-radius:11px; background:transparent; border:1px dashed var(--line); color:var(--dim); font-family:inherit; font-size:13px; cursor:pointer; letter-spacing:.03em; transition:border-color .2s,color .2s,background .2s}
+.zatr .upload:hover{border-color:var(--accent); color:var(--txt)}
+.zatr .upload.drag{border-color:var(--accent); color:var(--txt); background:rgba(224,82,13,.1)}
+.zatr .fname{font-size:11px; color:var(--good); text-align:center; margin-top:8px; min-height:14px; word-break:break-all; letter-spacing:.02em}
+
+.zatr .result{margin-top:18px; display:none}
+.zatr.has-result .result{display:block}
+.zatr .player{background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:13px 15px; margin-bottom:10px}
+.zatr .player .plab{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); margin-bottom:10px; display:flex; justify-content:space-between}
+.zatr .player.proc{border-color:rgba(224,82,13,.4)}
+.zatr .player.proc .plab{color:var(--accent)}
+.zatr .transport{display:flex; align-items:center; gap:12px}
+.zatr .play{flex:none; width:42px; height:42px; border-radius:50%; border:none; cursor:pointer; background:var(--accent); color:#0c0804; font-size:14px; box-shadow:0 8px 20px -8px var(--glow); transition:transform .12s}
+.zatr .play:hover{transform:translateY(-1px)}
+.zatr .player:not(.proc) .play{background:var(--txt); color:#0c0804}
+.zatr .prog{flex:1; -webkit-appearance:none; appearance:none; height:5px; border-radius:5px; background:var(--panel); border:1px solid var(--line); outline:none; cursor:pointer}
+.zatr .prog::-webkit-slider-thumb{-webkit-appearance:none; width:14px; height:14px; border-radius:50%; background:var(--accent); cursor:pointer}
+.zatr .prog::-moz-range-thumb{width:14px; height:14px; border:none; border-radius:50%; background:var(--accent); cursor:pointer}
+.zatr .time{flex:none; font-size:11px; color:var(--dim); min-width:78px; text-align:right}
+
+.zatr .ctrls{margin-top:14px; display:grid; gap:14px}
+.zatr .sect{font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); margin-top:4px; border-top:1px solid var(--line); padding-top:12px}
+.zatr input[type=range].k{-webkit-appearance:none; appearance:none; width:100%; height:5px; border-radius:5px; background:var(--panel2); border:1px solid var(--line); outline:none; cursor:pointer}
+.zatr input[type=range].k::-webkit-slider-thumb{-webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 4px rgba(224,82,13,.18); cursor:pointer}
+.zatr input[type=range].k::-moz-range-thumb{width:18px; height:18px; border:none; border-radius:50%; background:var(--accent); cursor:pointer}
+
+.zatr .dl{display:block; width:100%; margin-top:16px; padding:14px; border-radius:12px; text-align:center; text-decoration:none; font-family:var(--font-pixel); font-weight:700; font-size:15px; color:var(--good); background:transparent; border:1px solid rgba(79,138,60,.45); cursor:pointer; transition:background .2s,color .2s}
+.zatr .dl:hover{background:rgba(79,138,60,.12); color:var(--txt)}
+
+.zatr .status{text-align:center; font-size:11px; color:var(--dim); margin-top:14px; letter-spacing:.04em; min-height:14px; line-height:1.4}
+.zatr .foot{font-size:10px; color:var(--dim); text-align:center; margin-top:14px; opacity:.65; line-height:1.5}
+</style>
+
+<div class="zatr" id="fatr">
+  <div class="head"><div class="brand">AUTOTUNE<span class="dot">.</span></div></div>
+
+  <div class="card">
+    <div class="stage">
+      <div class="timer"><span class="rec-dot"></span><span id="fatr-timer">0:00</span></div>
+      <div class="hint" id="fatr-hint">Record your voice or upload a file, then pick a key and scale</div>
+    </div>
+
+    <div class="vu"><div class="vu-fill" id="fatr-vu"></div></div>
+
+    <div class="selrow">
+      <div class="row">
+    <a href="/tools/">Tools</a> ·<div class="lab">Key</div><select id="fatr-key"></select></div>
+      <div class="row"><div class="lab">Scale</div>
+        <select id="fatr-scale">
+          <option value="minor">Minor</option><option value="major">Major</option>
+          <option value="pentaMinor">Minor pentatonic</option><option value="pentaMajor">Major pentatonic</option>
+          <option value="chromatic">Chromatic</option>
+        </select>
+      </div>
+    </div>
+    <button class="auto" id="fatr-auto">✦ Detect key automatically</button>
+
+    <button class="recbtn" id="fatr-rec">● Record</button>
+    <button class="upload" id="fatr-uploadBtn">⤒ Upload an audio file or drag it here</button>
+    <div class="fname" id="fatr-fname"></div>
+    <input type="file" id="fatr-file" accept="audio/*" style="display:none">
+
+    <div class="result" id="fatr-result">
+      <div class="player">
+        <div class="plab"><span>Original</span></div>
+        <div class="transport">
+          <button class="play" id="fatr-orig-play">▶</button>
+          <input type="range" class="prog" id="fatr-orig-prog" min="0" max="1000" value="0">
+          <span class="time" id="fatr-orig-time">0:00 / 0:00</span>
+        </div>
+      </div>
+      <div class="player proc">
+        <div class="plab"><span>Autotune + effects</span><span id="fatr-meta"></span></div>
+        <div class="transport">
+          <button class="play" id="fatr-proc-play">▶</button>
+          <input type="range" class="prog" id="fatr-proc-prog" min="0" max="1000" value="0">
+          <span class="time" id="fatr-proc-time">0:00 / 0:00</span>
+        </div>
+      </div>
+
+      <div class="ctrls">
+        <div class="row"><div class="lab"><span>Correction strength</span><span class="val" id="fatr-strengthV">100%</span></div><input class="k" type="range" id="fatr-strength" min="0" max="100" value="100"></div>
+        <div class="row"><div class="lab"><span>Snap speed</span><span class="val" id="fatr-speedV">hard</span></div><input class="k" type="range" id="fatr-speed" min="0" max="100" value="80"></div>
+        <div class="row"><div class="lab"><span>Dry / Wet</span><span class="val" id="fatr-wetV">100%</span></div><input class="k" type="range" id="fatr-wet" min="0" max="100" value="100"></div>
+        <div class="sect">Reverb</div>
+        <div class="row"><div class="lab"><span>Amount</span><span class="val" id="fatr-revV">0%</span></div><input class="k" type="range" id="fatr-rev" min="0" max="100" value="0"></div>
+        <div class="row"><div class="lab"><span>Room size</span><span class="val" id="fatr-sizeV">medium</span></div><input class="k" type="range" id="fatr-size" min="0" max="100" value="45"></div>
+      </div>
+
+      <button class="dl" id="fatr-dl">⤓ Download result (WAV)</button>
+    </div>
+
+    <div class="status" id="fatr-status"></div>
+  </div>
+  <div class="foot">Processing and effects run right in your browser - recordings are never uploaded.</div>
+</div>
+
+<script>
+(function(){
+  const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const SCALES={chromatic:[0,1,2,3,4,5,6,7,8,9,10,11],major:[0,2,4,5,7,9,11],minor:[0,2,3,5,7,8,10],pentaMajor:[0,2,4,7,9],pentaMinor:[0,3,5,7,10]};
+  const MAX_SEC=30, UP_SEC=60;
+  const $=id=>document.getElementById(id);
+  const root=$('fatr');
+
+  const keySel=$('fatr-key'), scaleSel=$('fatr-scale');
+  NOTES.forEach((n,i)=>{const o=document.createElement('option');o.value=i;o.textContent=n;keySel.appendChild(o);});
+  keySel.value=0;
+
+  // recording
+  let ctx,stream,source,recNode,zeroGain,recording=false, chunks=[], total=0, raw=null, SR=44100, contour=null, procWet=null, timerId, t0, vuAt=0, procTimer;
+  // воспроизведение
+  let pctx, mixBus, conv, revGain, curDry, curWet, dryAB, wetAB, durSec=0, irSec=1.5;
+
+  const status=$('fatr-status'), hint=$('fatr-hint'), timerEl=$('fatr-timer'), vu=$('fatr-vu'), recBtn=$('fatr-rec'), fnameEl=$('fatr-fname');
+  const strengthEl=$('fatr-strength'), speedEl=$('fatr-speed'), wetEl=$('fatr-wet'), revEl=$('fatr-rev'), sizeEl=$('fatr-size'), metaEl=$('fatr-meta');
+
+  const fmt=s=>{ s=Math.max(0,Math.floor(s)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
+  const allowedSet=()=>new Set(SCALES[scaleSel.value].map(s=>(s+ +keySel.value)%12));
+  const speedToK=v=>Math.max(0.012,Math.min(1, 0.012*Math.pow(1/0.012, v/100)));
+  const revAmt=()=>(+revEl.value/100)*0.9;
+  const sizeToSec=v=>0.2+(v/100)*2.8;
+
+  /* ============ RECORDING ============ */
+  async function startRec(){
+    try{
+      status.textContent='';
+      ctx=new (window.AudioContext||window.webkitAudioContext)();
+      try{const b=ctx.createBuffer(1,1,22050),s=ctx.createBufferSource();s.buffer=b;s.connect(ctx.destination);s.start(0);}catch(e){}
+      ctx.resume(); SR=ctx.sampleRate;
+      await ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([$('zatr-worklet').textContent],{type:'application/javascript'})));
+      stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+      source=ctx.createMediaStreamSource(stream);
+      recNode=new AudioWorkletNode(ctx,'zatr-rec',{numberOfInputs:1,numberOfOutputs:1,outputChannelCount:[1]});
+      chunks=[]; total=0;
+      recNode.port.onmessage=e=>{
+        const f=e.data; chunks.push(f); total+=f.length;
+        let p=0; for(let i=0;i<f.length;i++){ const a=Math.abs(f[i]); if(a>p)p=a; }
+        const now=performance.now(); if(now-vuAt>50){ vuAt=now; vu.style.width=Math.min(100,p*140)+'%'; }
+        if(total/SR>=MAX_SEC) stopRec();
+      };
+      zeroGain=ctx.createGain(); zeroGain.gain.value=0;
+      source.connect(recNode); recNode.connect(zeroGain); zeroGain.connect(ctx.destination);
+      recording=true; root.classList.add('is-rec'); recBtn.textContent='■ Stop'; recBtn.classList.add('stop');
+      hint.textContent='Recording... sing into the mic'; fnameEl.textContent='';
+      t0=performance.now(); timerEl.textContent='0:00';
+      timerId=setInterval(()=>{ timerEl.textContent=fmt((performance.now()-t0)/1000); },200);
+    }catch(err){ status.textContent='Microphone access error: '+(err.message||err.name)+'. Needs HTTPS and permission.'; cleanupRec(); }
+  }
+  function stopRec(){
+    if(!recording) return;
+    recording=false; clearInterval(timerId);
+    root.classList.remove('is-rec'); recBtn.textContent='● Record again'; recBtn.classList.remove('stop');
+    vu.style.width='0%'; hint.textContent='Recording ready';
+    raw=new Float32Array(total); let off=0; for(const c of chunks){ raw.set(c,off); off+=c.length; }
+    cleanupRec();
+    if(total/SR<0.4){ status.textContent='Too short - sing a bit longer'; return; }
+    prepareResult();
+  }
+  function cleanupRec(){
+    try{ source&&source.disconnect(); recNode&&recNode.disconnect(); zeroGain&&zeroGain.disconnect(); }catch(e){}
+    try{ stream&&stream.getTracks().forEach(t=>t.stop()); ctx&&ctx.close(); }catch(e){}
+    source=recNode=zeroGain=stream=ctx=null;
+  }
+
+  /* ============ FILE LOADING ============ */
+  async function loadFile(f){
+    if(!f) return;
+    status.textContent='Loading file…';
+    try{
+      ensureCtx();
+      const arr=await f.arrayBuffer();
+      const ab=await new Promise((res,rej)=>{ try{ const p=pctx.decodeAudioData(arr,res,rej); if(p&&p.then)p.then(res,rej);}catch(e){rej(e);} });
+      SR=ab.sampleRate;
+      let N=ab.length; const cap=Math.floor(SR*UP_SEC); let trimmed=false; if(N>cap){ N=cap; trimmed=true; }
+      raw=new Float32Array(N); const chs=ab.numberOfChannels;
+      for(let c=0;c<chs;c++){ const d=ab.getChannelData(c); for(let i=0;i<N;i++) raw[i]+=d[i]/chs; }
+      fnameEl.textContent=f.name+(trimmed?' · trimmed to '+UP_SEC+' c':'');
+      hint.textContent='File loaded';
+      prepareResult();
+    }catch(e){ status.textContent='Could not read the file: '+(e.message||e.name); }
+  }
+
+  /* ============ PREPARING RESULT ============ */
+  function prepareResult(){
+    // нормализация уровня — recording и загруженный файл обрабатываются одинаково
+    let pk=0; for(let i=0;i<raw.length;i++){ const a=Math.abs(raw[i]); if(a>pk)pk=a; }
+    if(pk>1e-4){ const g=Math.min(0.9/pk,30); if(g!==1) for(let i=0;i<raw.length;i++) raw[i]*=g; }
+    ensureCtx();
+    deckPause(dOrig); deckPause(dProc); dOrig.pausedOff=0; dProc.pausedOff=0;
+    durSec=raw.length/SR;
+    dOrig.time.textContent='0:00 / '+fmt(durSec); dOrig.prog.value=0;
+    dProc.time.textContent='0:00 / '+fmt(durSec); dProc.prog.value=0;
+    root.classList.add('has-result');
+    status.textContent='Analyzing pitch…';
+    setTimeout(()=>{ contour=pitchContour(raw,SR); dryAB=makeAB(raw); runPSOLA(); },50);
+  }
+
+  /* ============ PITCH ANALYSIS (YIN + гейт + заполнение пропусков) ============ */
+  function pitchContour(x, sr){
+    const DEC=4, sd=sr/DEC, M=Math.floor(x.length/DEC), xd=new Float32Array(M);
+    for(let i=0;i<M;i++){ let s=0; for(let j=0;j<DEC;j++) s+=x[i*DEC+j]; xd[i]=s/DEC; }
+    const W=512, tauMax=256, hop=64, frames=Math.max(1,Math.floor((M-W)/hop));
+    const f0=new Float32Array(frames), cl=new Float32Array(frames), d=new Float32Array(tauMax), cm=new Float32Array(tauMax);
+    for(let fr=0; fr<frames; fr++){
+      const o=fr*hop;
+      let e=0; for(let i=0;i<W;i++){ const v=xd[o+i]; e+=v*v; } e=Math.sqrt(e/W);
+      if(e<0.01){ f0[fr]=0; cl[fr]=0; continue; }            // энергетический гейт
+      for(let tau=1;tau<tauMax;tau++){ let s=0; for(let i=0;i<tauMax;i++){const df=xd[o+i]-xd[o+i+tau]; s+=df*df;} d[tau]=s; }
+      cm[0]=1; let run=0; for(let tau=1;tau<tauMax;tau++){ run+=d[tau]; cm[tau]= run>0?d[tau]*tau/run:1; }
+      let tau=-1; for(let t=2;t<tauMax;t++){ if(cm[t]<0.15){ while(t+1<tauMax&&cm[t+1]<cm[t])t++; tau=t; break; } }
+      if(tau>1 && tau<tauMax-1 && cm[tau]<0.2){
+        const a=cm[tau-1],b=cm[tau],c=cm[tau+1],den=a-2*b+c; let tt=tau; if(den!==0)tt=tau+0.5*(a-c)/den;
+        const ff=sd/tt; f0[fr]=(ff>60&&ff<1100)?ff:0; cl[fr]=1-cm[tau];
+      } else { f0[fr]=0; cl[fr]=0; }
+    }
+    // медианное сглаживание ×2
+    const tmp=new Float32Array(frames), out=new Float32Array(frames), w=[0,0,0,0,0];
+    const med=(src,dst)=>{ for(let i=0;i<frames;i++){ let n=0; for(let k=-2;k<=2;k++){const j=i+k; if(j>=0&&j<frames&&src[j]>0) w[n++]=src[j];} if(!n){dst[i]=0;continue;} const a=w.slice(0,n).sort((p,q)=>p-q); dst[i]=a[(n-1)>>1]; } };
+    med(f0,tmp); med(tmp,out);
+    // заполнение коротких пропусков внутри ноты (≤ ~12 кадров ≈ 70 мс)
+    for(let i=0;i<frames;i++){ if(out[i]===0){
+      let p=i-1; while(p>=0&&out[p]===0)p--; let q=i+1; while(q<frames&&out[q]===0)q++;
+      if(p>=0&&q<frames&&(q-p)<=12){ const t=(i-p)/(q-p); out[i]=out[p]*(1-t)+out[q]*t; cl[i]=Math.min(cl[p]||0.5,cl[q]||0.5); }
+    }}
+    return {f0:out, cl, hop:hop*DEC, frames};
+  }
+
+  /* ============ AUTO KEY (Krumhansl, корреляция Пирсона, вес по уверенности) ============ */
+  function detectKey(C){
+    const pc=new Float64Array(12); let tot=0;
+    for(let i=0;i<C.frames;i++){ if(C.f0[i]>0 && C.cl[i]>0.4){ const m=Math.round(69+12*Math.log2(C.f0[i]/440)); const wgt=C.cl[i]; pc[((m%12)+12)%12]+=wgt; tot+=wgt; } }
+    if(tot<3) return null;
+    const maj=[6.35,2.23,3.48,2.33,4.38,4.09,2.52,5.19,2.39,3.66,2.29,2.88], min=[6.33,2.68,3.52,5.38,2.60,3.53,2.54,4.75,3.98,2.69,3.34,3.17];
+    const corr=(a,b)=>{ let ma=0,mb=0; for(let i=0;i<12;i++){ma+=a[i];mb+=b[i];} ma/=12;mb/=12; let n=0,da=0,db=0; for(let i=0;i<12;i++){const x=a[i]-ma,y=b[i]-mb; n+=x*y; da+=x*x; db+=y*y;} return n/(Math.sqrt(da*db)||1e-9); };
+    let best={s:-2};
+    for(let r=0;r<12;r++){
+      const rm=new Float64Array(12), rn=new Float64Array(12);
+      for(let i=0;i<12;i++){ rm[i]=maj[((i-r)%12+12)%12]; rn[i]=min[((i-r)%12+12)%12]; }
+      const sM=corr(pc,rm), sm=corr(pc,rn);
+      if(sM>best.s)best={s:sM,root:r,mode:'major'};
+      if(sm>best.s)best={s:sm,root:r,mode:'minor'};
+    }
+    return best;
+  }
+
+  /* ============ CORRECTION + PSOLA ============ */
+  function snapMidi(sm, allowed){ let bm=Math.round(sm),bd=1e9,c=Math.round(sm); for(let m=c-4;m<=c+4;m++){ if(allowed.has(((m%12)+12)%12)){ const dd=Math.abs(m-sm); if(dd<bd){bd=dd;bm=m;} } } return bm; }
+  function buildRatio(C, allowed, strength, k){
+    const F=C.frames, ratio=new Float32Array(F); let corr=0;
+    for(let i=0;i<F;i++){ const f=C.f0[i], voiced=(f>0);
+      if(voiced){ const sm=69+12*Math.log2(f/440); const desired=snapMidi(sm,allowed)-sm; corr+=(desired-corr)*k; let dd=corr*strength; if(dd>12)dd=12; else if(dd<-12)dd=-12; ratio[i]=Math.pow(2,dd/12); }
+      else { corr+=(0-corr)*k; ratio[i]=1; } }
+    return ratio;
+  }
+  function psola(x, sr, C, ratio){
+    const N=x.length, hop=C.hop, F=C.frames;
+    const fIdx=p=>{ let i=Math.round(p/hop); return i<0?0:(i>=F?F-1:i); };
+    const f0at=p=>{ const f=C.f0[fIdx(p)]; return f>0?f:0; };
+    const ratAt=p=>ratio[fIdx(p)]||1;
+    const marks=[]; let pos=0; while(pos<N){ marks.push(Math.round(pos)); const f=f0at(pos); const T=f>0?sr/f:sr/140; pos+=(T>20?T:20); }
+    const out=new Float32Array(N), nrm=new Float32Array(N); let mi=0, sp=0;
+    while(sp<N-1){
+      while(mi+1<marks.length && Math.abs(marks[mi+1]-sp)<=Math.abs(marks[mi]-sp)) mi++;
+      const am=marks[mi], f=f0at(sp); let Tin=f>0?sr/f:sr/140; let r=ratAt(sp); if(r>2)r=2; else if(r<0.5)r=0.5;
+      const win=Math.max(8,Math.round(Tin)), cen=Math.round(sp);
+      for(let kk=-win;kk<=win;kk++){ const ii=am+kk, oo=cen+kk; if(ii>=0&&ii<N&&oo>=0&&oo<N){ const ww=0.5+0.5*Math.cos(Math.PI*kk/win); out[oo]+=x[ii]*ww; nrm[oo]+=ww; } }
+      sp += Tin/r;
+    }
+    for(let i=0;i<N;i++) out[i]= nrm[i]>1e-6 ? out[i]/nrm[i] : 0;
+    let rr=0,rp=0; for(let i=0;i<N;i++){ rr+=x[i]*x[i]; rp+=out[i]*out[i]; } rr=Math.sqrt(rr/N); rp=Math.sqrt(rp/N);
+    const g= rp>1e-6 ? Math.min(4,rr/rp) : 1; let pk=0;
+    for(let i=0;i<N;i++){ out[i]*=g; const a=Math.abs(out[i]); if(a>pk)pk=a; }
+    if(pk>0.99){ const s=0.99/pk; for(let i=0;i<N;i++) out[i]*=s; }
+    return out;
+  }
+
+  /* ============ PLAYBACK GRAPH ============ */
+  function makeIR(c, sec){ const len=Math.max(1,Math.floor(c.sampleRate*sec)), ir=c.createBuffer(1,len,c.sampleRate), d=ir.getChannelData(0); for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.5); return ir; }
+  function makeAB(f){ const b=pctx.createBuffer(1,f.length,SR); b.copyToChannel(f,0); return b; }
+  function ensureCtx(){
+    if(pctx) return;
+    pctx=new (window.AudioContext||window.webkitAudioContext)();
+    mixBus=pctx.createGain(); mixBus.gain.value=1;
+    conv=pctx.createConvolver(); conv.buffer=makeIR(pctx,irSec);
+    revGain=pctx.createGain(); revGain.gain.value=revAmt();
+    mixBus.connect(pctx.destination); mixBus.connect(conv); conv.connect(revGain); revGain.connect(pctx.destination);
+  }
+
+  // две «деки» с одинаковым плеером
+  const dOrig={ playing:false, startT:0, startOff:0, pausedOff:0, stopFn:null, btn:$('fatr-orig-play'), prog:$('fatr-orig-prog'), time:$('fatr-orig-time'), make:null };
+  const dProc={ playing:false, startT:0, startOff:0, pausedOff:0, stopFn:null, btn:$('fatr-proc-play'), prog:$('fatr-proc-prog'), time:$('fatr-proc-time'), make:null };
+  dOrig.make=(off)=>{ const s=pctx.createBufferSource(); s.buffer=dryAB; s.connect(pctx.destination);
+    s.onended=()=>{ if(dOrig.playing && deckHead(dOrig)>=durSec-0.06){ deckStop(dOrig); dOrig.playing=false; dOrig.pausedOff=0; updateDeck(dOrig);} };
+    s.start(0,off); return ()=>{ s.onended=null; try{s.stop();}catch(e){} }; };
+  dProc.make=(off)=>{ const ds=pctx.createBufferSource(); ds.buffer=dryAB; const ws=pctx.createBufferSource(); ws.buffer=wetAB;
+    curDry=pctx.createGain(); curWet=pctx.createGain(); const w=+wetEl.value/100; curDry.gain.value=1-w; curWet.gain.value=w;
+    ds.connect(curDry).connect(mixBus); ws.connect(curWet).connect(mixBus);
+    ds.onended=()=>{ if(dProc.playing && deckHead(dProc)>=durSec-0.06){ deckStop(dProc); dProc.playing=false; dProc.pausedOff=0; updateDeck(dProc);} };
+    ds.start(0,off); ws.start(0,off); return ()=>{ ds.onended=null; try{ds.stop();}catch(e){} try{ws.stop();}catch(e){} }; };
+
+  function deckHead(d){ return d.playing ? Math.min(durSec, pctx.currentTime-d.startT+d.startOff) : d.pausedOff; }
+  function deckStop(d){ if(d.stopFn){ d.stopFn(); d.stopFn=null; } }
+  function deckPause(d){ if(!pctx) return; d.pausedOff=deckHead(d); deckStop(d); d.playing=false; updateDeck(d); }
+  function deckPlay(d, off){ ensureCtx(); pctx.resume(); deckPause(d===dOrig?dProc:dOrig); d.stopFn=d.make(off); d.startT=pctx.currentTime; d.startOff=off; d.playing=true; updateDeck(d); requestAnimationFrame(()=>tickDeck(d)); }
+  function updateDeck(d){ d.btn.textContent=d.playing?'❚❚':'▶'; }
+  function tickDeck(d){ const t=deckHead(d); d.prog.value=durSec?Math.round(t/durSec*1000):0; d.time.textContent=fmt(t)+' / '+fmt(durSec); if(d.playing) requestAnimationFrame(()=>tickDeck(d)); }
+
+  dOrig.btn.onclick=()=>{ if(!dryAB) return; dOrig.playing?deckPause(dOrig):deckPlay(dOrig, Math.min(dOrig.pausedOff,Math.max(0,durSec-0.05))); };
+  dProc.btn.onclick=()=>{ if(!wetAB) return; dProc.playing?deckPause(dProc):deckPlay(dProc, Math.min(dProc.pausedOff,Math.max(0,durSec-0.05))); };
+  dOrig.prog.oninput=()=>{ const t=(+dOrig.prog.value/1000)*durSec; if(dOrig.playing){ deckStop(dOrig); deckPlay(dOrig,t);} else { dOrig.pausedOff=t; dOrig.time.textContent=fmt(t)+' / '+fmt(durSec); } };
+  dProc.prog.oninput=()=>{ const t=(+dProc.prog.value/1000)*durSec; if(dProc.playing){ deckStop(dProc); deckPlay(dProc,t);} else { dProc.pausedOff=t; dProc.time.textContent=fmt(t)+' / '+fmt(durSec); } };
+
+  /* ============ PROCESSING ============ */
+  function runPSOLA(){
+    if(!raw||!contour) return; status.textContent='Processing…'; clearTimeout(procTimer);
+    procTimer=setTimeout(()=>{ try{
+      const ratio=buildRatio(contour, allowedSet(), +strengthEl.value/100, speedToK(+speedEl.value));
+      procWet=psola(raw,SR,contour,ratio);
+      ensureCtx(); wetAB=makeAB(procWet); if(!dryAB) dryAB=makeAB(raw);
+      metaEl.textContent=NOTES[+keySel.value]+' '+scaleSel.selectedOptions[0].textContent.toLowerCase();
+      if(dProc.playing){ const t=deckHead(dProc); deckStop(dProc); deckPlay(dProc,t); }
+      status.textContent='Done';
+    }catch(e){ status.textContent='Processing error: '+(e.message||e.name); } },50);
+  }
+
+  /* ============ WAV / EXPORT ============ */
+  function encodeWAV(x, sr){
+    const len=x.length, buf=new ArrayBuffer(44+len*2), v=new DataView(buf);
+    const ws=(o,s)=>{ for(let i=0;i<s.length;i++) v.setUint8(o+i, s.charCodeAt(i)); };
+    ws(0,'RIFF'); v.setUint32(4,36+len*2,true); ws(8,'WAVE'); ws(12,'fmt '); v.setUint32(16,16,true);
+    v.setUint16(20,1,true); v.setUint16(22,1,true); v.setUint32(24,sr,true); v.setUint32(28,sr*2,true);
+    v.setUint16(32,2,true); v.setUint16(34,16,true); ws(36,'data'); v.setUint32(40,len*2,true);
+    let o=44; for(let i=0;i<len;i++){ let s=Math.max(-1,Math.min(1,x[i])); v.setInt16(o, s<0?s*0x8000:s*0x7FFF, true); o+=2; }
+    return new Blob([buf],{type:'audio/wav'});
+  }
+  async function renderOffline(){
+    const tail=Math.ceil(SR*irSec), N=raw.length, oac=new OfflineAudioContext(1, N+tail, SR);
+    const dAB=oac.createBuffer(1,N,SR); dAB.copyToChannel(raw,0);
+    const wAB=oac.createBuffer(1,N,SR); wAB.copyToChannel(procWet,0);
+    const ds=oac.createBufferSource(); ds.buffer=dAB; const ws2=oac.createBufferSource(); ws2.buffer=wAB;
+    const dg=oac.createGain(), wg=oac.createGain(), bus=oac.createGain(); const w=+wetEl.value/100; dg.gain.value=1-w; wg.gain.value=w;
+    const cv=oac.createConvolver(); cv.buffer=makeIR(oac,irSec); const rg=oac.createGain(); rg.gain.value=revAmt();
+    ds.connect(dg).connect(bus); ws2.connect(wg).connect(bus);
+    bus.connect(oac.destination); bus.connect(cv); cv.connect(rg); rg.connect(oac.destination);
+    ds.start(0); ws2.start(0);
+    const rb=await oac.startRendering(); return encodeWAV(rb.getChannelData(0), SR);
+  }
+
+  /* ============ KNOBS / INPUT ============ */
+  strengthEl.oninput=e=>{ $('fatr-strengthV').textContent=e.target.value+'%'; };
+  strengthEl.onchange=runPSOLA;
+  speedEl.oninput=e=>{ const v=+e.target.value; $('fatr-speedV').textContent=v>70?'hard':(v>35?'medium':'smooth'); };
+  speedEl.onchange=runPSOLA;
+  wetEl.oninput=e=>{ $('fatr-wetV').textContent=e.target.value+'%'; const w=+e.target.value/100; if(curWet){ curWet.gain.value=w; curDry.gain.value=1-w; } };
+  revEl.oninput=e=>{ $('fatr-revV').textContent=e.target.value+'%'; if(revGain) revGain.gain.value=revAmt(); };
+  let sizeTimer;
+  sizeEl.oninput=e=>{ const v=+e.target.value; $('fatr-sizeV').textContent=v>66?'large':(v>33?'medium':'room'); irSec=sizeToSec(v); clearTimeout(sizeTimer); sizeTimer=setTimeout(()=>{ if(conv) conv.buffer=makeIR(pctx,irSec); },120); };
+  keySel.onchange=()=>{ if(raw) runPSOLA(); };
+  scaleSel.onchange=()=>{ if(raw) runPSOLA(); };
+  $('fatr-auto').onclick=()=>{ if(!contour){ status.textContent='Record or upload audio first'; return; } const k=detectKey(contour); if(!k){ status.textContent='Could not detect - not enough tonal signal'; return; } keySel.value=k.root; scaleSel.value=k.mode; runPSOLA(); };
+  $('fatr-dl').onclick=async()=>{ if(!procWet) return; status.textContent='Preparing the file with effects…'; try{ const wav=await renderOffline(); const u=URL.createObjectURL(wav); const a=document.createElement('a'); a.href=u; a.download='zalturi-autotune.wav'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),2000); status.textContent='File saved'; }catch(e){ status.textContent='Export error: '+(e.message||e.name); } };
+  recBtn.onclick=()=> recording?stopRec():startRec();
+
+  // загрузка: клик + drag-and-drop
+  const up=$('fatr-uploadBtn');
+  up.onclick=()=> $('fatr-file').click();
+  $('fatr-file').onchange=e=>{ const f=e.target.files&&e.target.files[0]; loadFile(f); e.target.value=''; };
+  ['dragenter','dragover'].forEach(ev=>up.addEventListener(ev,e=>{ e.preventDefault(); e.stopPropagation(); up.classList.add('drag'); }));
+  ['dragleave','dragend','drop'].forEach(ev=>up.addEventListener(ev,e=>{ e.preventDefault(); e.stopPropagation(); up.classList.remove('drag'); }));
+  up.addEventListener('drop',e=>{ const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0]; if(f) loadFile(f); });
+})();
+</script>
+  </section>
+
+  <section class="wrap section"><p class="note" style="text-align:left;max-width:760px;margin:0">How it works: record straight from your mic or upload a take, choose a key and scale (or let it detect the key), then tune the correction strength, snap speed and dry/wet to taste and add a touch of reverb. Compare the original and the processed take side by side and download the result as a WAV. All processing happens locally - your audio never leaves the browser.</p></section>
+</main>
+
+<footer class="wrap footer">
+  ZALTURI / noface project / music save us
+  <div class="row">
+    <a href="/tools/">Tools</a> ·
+    <a href="/">Home</a> ·
+    <a href="/about/">Manifesto</a> ·
+    <a href="https://soundcloud.com/zalturi" target="_blank" rel="noopener">SoundCloud</a>
+  </div>
+</footer>
+</body>
+</html>
