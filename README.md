@@ -3,8 +3,9 @@
 Статический сайт (HTML/CSS/JS, без сборки). Готов под GitHub Pages + домен `zalturi.com`.
 
 8-бит / CRT эстетика, английский язык, SEO «под ключ» (мета, Open Graph, Twitter,
-JSON-LD, sitemap, robots, манифест), пиксель-арт персонаж на главной и аркада с двумя
-играми (Pac·Man с онлайн-таблицей рекордов и ZALTURI Runner).
+JSON-LD, sitemap, robots, манифест), пиксель-арт персонаж на главной, постоянный
+виджет интернет-радио и аркада с двумя играми (Pac·Man с онлайн-таблицей рекордов и
+ZALTURI Runner).
 
 ## Структура
 
@@ -23,6 +24,7 @@ zalturi-site/
 │   ├── css/base.css           ← дизайн-система (+ пиксельный курсор)
 │   ├── js/pixelate.js         ← «оживающий» пиксель-персонаж
 │   ├── js/equalizer.js        ← дом-эквалайзер «The block»
+│   ├── js/radio.js            ← ZALTURI PIRATE STATION: постоянный radio shell + виджет
 │   ├── fonts/*.woff2           ← Press Start 2P + VT323 (self-host)
 │   └── img/*                   ← персонаж, og.png, фавикон (лицо в ушанке), cursor.png
 ├── sitemap.xml  robots.txt  site.webmanifest  404.html  CNAME  .gitignore
@@ -90,6 +92,7 @@ CNAME www <логин>.github.io
 | Плейлист SoundCloud (плеер) | `index.html` → `iframe ... playlists%253A2258423573` |
 | Ссылки SoundCloud | в шапке/подвале всех страниц (`soundcloud.com/zalturi`) |
 | Ссылка на скачивание | `disk.yandex.ru/d/LQxYDO_lA7LHRQ` (везде) |
+| Поток ZALTURI PIRATE STATION | `assets/js/radio.js` → `STREAM_URL`. Сейчас используется базовый SurferNetwork stream URL без короткоживущего `zt`-токена |
 | Таблица рекордов Pac·Man | `arcade/pacman/index.html` → `SB_URL` / `SB_KEY` (Supabase, publishable-ключ — публичный по дизайну) |
 | Картинка персонажа | `assets/img/zalturi-character.png` |
 | Сила пикселизации персонажа | атрибуты `data-cols` / `data-cell` у `<img data-pixelate>` в `index.html` |
