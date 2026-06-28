@@ -83,19 +83,23 @@ input, textarea, [contenteditable="true"] { cursor: text; }
 
 /* ---- persistent pirate radio shell ---- */
 body.z-shell-host {
-  overflow: hidden;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   background:
     radial-gradient(circle at 20% 10%, rgba(192,68,10,0.16), transparent 28%),
     radial-gradient(circle at 80% 92%, rgba(212,168,67,0.10), transparent 28%),
     var(--z-bg);
 }
 .z-site-frame {
-  position: fixed;
-  inset: 0;
+  position: relative;
+  display: block;
   z-index: 1;
   width: 100%;
-  height: 100vh;
-  height: 100dvh;
+  min-height: 100vh;
+  min-height: 100dvh;
+  height: var(--z-frame-height, 100vh);
   border: 0;
   background: var(--z-bg);
 }

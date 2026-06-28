@@ -7,7 +7,7 @@
   "use strict";
 
   var STREAM_URL = "https://stream-286.surfernetwork.com/1t7w7w8r7whvv";
-  var CSS_URL = "/assets/css/base.css?v=20260628e";
+  var CSS_URL = "/assets/css/base.css?v=20260628f";
   var STATION = "ZALTURI PIRATE STATION";
   var child = window.top !== window;
 
@@ -54,13 +54,16 @@
     var startHref = window.location.href;
     var frame;
     var loading;
+    var frameHeightTick = 0;
+    var frameResizeObserver = null;
     var syncing = false;
+    var lastFrameUrl = "";
 
     function mount() {
       document.body.className = "z-shell-host";
       document.body.innerHTML =
         '<div class="z-shell-scan" aria-hidden="true"></div>' +
-        '<iframe class="z-site-frame" title="ZALTURI site" src="about:blank"></iframe>' +
+        '<iframe class="z-site-frame" title="ZALTURI site" src="about:blank" scrolling="no"></iframe>' +
         '<div class="z-frame-loading" aria-hidden="true"><span></span><b>tuning</b></div>';
 
       frame = document.querySelector(".z-site-frame");
@@ -74,6 +77,8 @@
         loading.classList.add("is-on");
         frame.src = window.location.href;
       });
+      window.addEventListener("resize", scheduleFrameHeight);
+      window.addEventListener("orientationchange", scheduleFrameHeight);
     }
 
     function onFrameLoad() {
@@ -84,6 +89,9 @@
         var next = loc.pathname + loc.search + loc.hash;
         if (doc && doc.title) document.title = doc.title;
         addFramePadding(doc);
+        wireFrameSizing(doc);
+        if (lastFrameUrl && next !== lastFrameUrl && !loc.hash) window.scrollTo(0, 0);
+        lastFrameUrl = next;
         if (!syncing && next !== window.location.pathname + window.location.search + window.location.hash) {
           history.pushState({ zalturiFrame: true }, doc && doc.title ? doc.title : "", next);
         }
@@ -98,8 +106,56 @@
       if (!doc || !doc.head || doc.getElementById("zalturi-radio-frame-pad")) return;
       var style = doc.createElement("style");
       style.id = "zalturi-radio-frame-pad";
-      style.textContent = "body{padding-bottom:140px!important}@media(max-width:720px){body{padding-bottom:176px!important}}";
+      style.textContent = "html,body{overflow:hidden!important}body{padding-bottom:140px!important}@media(max-width:720px){body{padding-bottom:176px!important}}";
       doc.head.appendChild(style);
+    }
+
+    function wireFrameSizing(doc) {
+      if (frameResizeObserver) frameResizeObserver.disconnect();
+      if (window.ResizeObserver && doc.body) {
+        try {
+          frameResizeObserver = new ResizeObserver(scheduleFrameHeight);
+          frameResizeObserver.observe(doc.documentElement);
+          frameResizeObserver.observe(doc.body);
+        } catch (e) {
+          frameResizeObserver = null;
+        }
+      }
+      if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(scheduleFrameHeight);
+      Array.prototype.forEach.call(doc.querySelectorAll("img, iframe, video"), function (node) {
+        node.addEventListener("load", scheduleFrameHeight, { once: true });
+        node.addEventListener("loadedmetadata", scheduleFrameHeight, { once: true });
+      });
+      [40, 140, 360, 900, 1800].forEach(function (delay) {
+        window.setTimeout(scheduleFrameHeight, delay);
+      });
+      scheduleFrameHeight();
+    }
+
+    function scheduleFrameHeight() {
+      if (frameHeightTick) window.cancelAnimationFrame(frameHeightTick);
+      frameHeightTick = window.requestAnimationFrame(syncFrameHeight);
+    }
+
+    function syncFrameHeight() {
+      frameHeightTick = 0;
+      if (!frame) return;
+      try {
+        var doc = frame.contentDocument;
+        if (!doc || !doc.documentElement || !doc.body) return;
+        var html = doc.documentElement;
+        var body = doc.body;
+        var height = Math.max(
+          html.scrollHeight,
+          body.scrollHeight,
+          html.offsetHeight,
+          body.offsetHeight,
+          html.clientHeight,
+          window.innerHeight
+        );
+        frame.style.height = Math.ceil(height) + "px";
+        document.documentElement.style.setProperty("--z-frame-height", Math.ceil(height) + "px");
+      } catch (e) {}
     }
 
     return { mount: mount };
