@@ -7,6 +7,7 @@
   "use strict";
 
   var STREAM_URL = "https://stream-286.surfernetwork.com/1t7w7w8r7whvv";
+  var CSS_URL = "/assets/css/base.css?v=20260628d";
   var STATION = "ZALTURI PIRATE STATION";
   var child = window.top !== window;
 
@@ -29,6 +30,7 @@
   }
 
   ready(function () {
+    ensureShellCss();
     var shell = buildShell();
     var radio = buildRadio();
     shell.mount();
@@ -38,6 +40,15 @@
       if (event.data && event.data.type === "zalturi-radio-open") radio.focus();
     });
   });
+
+  function ensureShellCss() {
+    if (document.querySelector('link[rel="stylesheet"][href="' + CSS_URL + '"], link[data-zalturi-shell-css][href="' + CSS_URL + '"]')) return;
+    var link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = CSS_URL;
+    link.setAttribute("data-zalturi-shell-css", "true");
+    document.head.appendChild(link);
+  }
 
   function buildShell() {
     var startHref = window.location.href;
