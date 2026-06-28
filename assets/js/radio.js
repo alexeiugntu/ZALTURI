@@ -7,7 +7,7 @@
   "use strict";
 
   var STREAM_URL = "https://stream-286.surfernetwork.com/1t7w7w8r7whvv";
-  var CSS_URL = "/assets/css/base.css?v=20260628d";
+  var CSS_URL = "/assets/css/base.css?v=20260628e";
   var STATION = "ZALTURI PIRATE STATION";
   var child = window.top !== window;
 
@@ -156,6 +156,11 @@
         try { localStorage.setItem("zalturiRadioVolume", String(audio.volume)); } catch (e) {}
       });
       window.addEventListener("resize", scheduleMarquees);
+      window.addEventListener("orientationchange", scheduleMarquees);
+      window.addEventListener("pageshow", scheduleMarquees);
+      document.addEventListener("visibilitychange", function () {
+        if (!document.hidden) scheduleMarquees();
+      });
       if (document.fonts && document.fonts.ready) document.fonts.ready.then(scheduleMarquees);
 
       audio.addEventListener("loadstart", function () {
@@ -179,6 +184,9 @@
       setState("off", "off air");
       syncVolumeUi();
       scheduleMarquees();
+      [120, 420, 900, 1600].forEach(function (delay) {
+        window.setTimeout(scheduleMarquees, delay);
+      });
     }
 
     function toggle() {
@@ -238,6 +246,7 @@
         if (!text) return;
         item.classList.remove("is-marquee");
         item.style.removeProperty("--marquee-distance");
+        item.style.removeProperty("--marquee-shift");
         item.style.removeProperty("--marquee-duration");
         text.style.removeProperty("animationDelay");
 
@@ -246,8 +255,10 @@
 
         distance += 22;
         item.style.setProperty("--marquee-distance", distance + "px");
+        item.style.setProperty("--marquee-shift", "-" + distance + "px");
         item.style.setProperty("--marquee-duration", Math.max(13, Math.min(26, distance / 10)).toFixed(1) + "s");
         text.style.animationDelay = "1.2s";
+        void text.offsetWidth;
         item.classList.add("is-marquee");
       });
     }

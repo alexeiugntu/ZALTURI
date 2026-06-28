@@ -271,9 +271,9 @@ body.z-shell-host {
   animation: pr-marquee var(--marquee-duration, 18s) linear infinite;
 }
 @keyframes pr-marquee {
-  0%, 16% { transform: translateX(0); }
-  74%, 86% { transform: translateX(calc(var(--marquee-distance, 40px) * -1)); }
-  100% { transform: translateX(0); }
+  0%, 16% { transform: translate3d(0, 0, 0); }
+  74%, 86% { transform: translate3d(var(--marquee-shift, -40px), 0, 0); }
+  100% { transform: translate3d(0, 0, 0); }
 }
 .pr-bars {
   display: flex;
@@ -299,14 +299,19 @@ body.z-shell-host {
 .pr-bars span:nth-child(4) { height: 24px; background: var(--z-amber); }
 .pr-bars span:nth-child(5) { height: 36px; background: var(--z-gold); }
 .pr-bars span:nth-child(6) { height: 19px; }
-.pirate-radio[data-state="live"] .pr-bars span {
+.pirate-radio[data-state="live"] .pr-bars span,
+.pirate-radio[data-state="tuning"] .pr-bars span {
   opacity: 1;
   animation: pr-bars 0.86s steps(5, end) infinite;
 }
-.pirate-radio[data-state="live"] .pr-bars span:nth-child(2) { animation-duration: 0.74s; }
-.pirate-radio[data-state="live"] .pr-bars span:nth-child(3) { animation-duration: 0.58s; }
-.pirate-radio[data-state="live"] .pr-bars span:nth-child(4) { animation-duration: 0.92s; }
-.pirate-radio[data-state="live"] .pr-bars span:nth-child(5) { animation-duration: 0.69s; }
+.pirate-radio[data-state="live"] .pr-bars span:nth-child(2),
+.pirate-radio[data-state="tuning"] .pr-bars span:nth-child(2) { animation-duration: 0.74s; }
+.pirate-radio[data-state="live"] .pr-bars span:nth-child(3),
+.pirate-radio[data-state="tuning"] .pr-bars span:nth-child(3) { animation-duration: 0.58s; }
+.pirate-radio[data-state="live"] .pr-bars span:nth-child(4),
+.pirate-radio[data-state="tuning"] .pr-bars span:nth-child(4) { animation-duration: 0.92s; }
+.pirate-radio[data-state="live"] .pr-bars span:nth-child(5),
+.pirate-radio[data-state="tuning"] .pr-bars span:nth-child(5) { animation-duration: 0.69s; }
 @keyframes pr-bars {
   0% { transform: scaleY(0.42); }
   35% { transform: scaleY(1); }
@@ -1092,5 +1097,22 @@ a.card:hover::after { color: var(--z-amber); }
 /* ---- motion ---- */
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+  .pirate-radio .pr-marquee.is-marquee .pr-marquee-text {
+    animation-duration: var(--marquee-duration, 18s) !important;
+    animation-iteration-count: infinite !important;
+    animation-name: pr-marquee !important;
+  }
+  .pirate-radio[data-state="live"] .pr-bars span,
+  .pirate-radio[data-state="tuning"] .pr-bars span {
+    animation-duration: 0.86s !important;
+    animation-iteration-count: infinite !important;
+    animation-name: pr-bars !important;
+  }
+  .pirate-radio[data-state="live"] .pr-kicker i,
+  .pirate-radio[data-state="live"] .pr-status i {
+    animation-duration: 1.1s !important;
+    animation-iteration-count: infinite !important;
+    animation-name: z-blink !important;
+  }
   html { scroll-behavior: auto; }
 }
