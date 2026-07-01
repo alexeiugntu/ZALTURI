@@ -282,22 +282,25 @@
   function drawGraffiti() { var x = bx + 8, y = by + bh - 16; ctx.fillStyle = "rgba(192,68,10,0.85)"; ctx.fillRect(x, y, 8, 1); ctx.fillRect(x + 5, y + 1, 1, 1); ctx.fillRect(x + 4, y + 2, 1, 1); ctx.fillRect(x + 3, y + 3, 1, 1); ctx.fillRect(x + 2, y + 4, 1, 1); ctx.fillRect(x, y + 5, 8, 1); }
   function drawDoor() { var dw = cellW + GX, dx = Math.round(bx + bw / 2 - dw / 2); ctx.fillStyle = DOOR; ctx.fillRect(dx, by + bh - 4, dw, BASE + 4); ctx.fillStyle = FAC_LO; ctx.fillRect(dx - 3, by + bh - 6, dw + 6, 4); ctx.fillStyle = "rgba(232,197,106,0.6)"; ctx.fillRect(dx + dw / 2 - 2, by + bh - 4, 4, 3); }
 
+  var RAIN_WIND = 0.34;   // horizontal drift per vertical px — slight slant, as if wind
   function drawRain() {
     if (!drops) {
       drops = [];
       var count = Math.round(CW / 4.5);
       for (var i = 0; i < count; i++) {
-        drops.push({ x: Math.random() * CW, y: Math.random() * CH, len: 4 + Math.random() * 8, sp: 3.5 + Math.random() * 5, hot: Math.random() < 0.3 });
+        drops.push({ x: Math.random() * CW, y: Math.random() * CH, len: 5 + Math.random() * 8, sp: 1.2 + Math.random() * 1.5, hot: Math.random() < 0.3 });
       }
     }
-    // cold night tint over the warm house, then pixel streaks falling
+    // cold night tint over the warm house, then slow slanted pixel streaks
     ctx.fillStyle = "rgba(26,42,68,0.16)"; ctx.fillRect(0, 0, CW, CH);
     for (var j = 0; j < drops.length; j++) {
-      var d = drops[j];
+      var d = drops[j], steps = d.len | 0;
       ctx.fillStyle = d.hot ? "rgba(216,232,246,0.78)" : "rgba(158,186,214,0.55)";
-      ctx.fillRect(d.x | 0, d.y | 0, 1, d.len | 0);
+      for (var s = 0; s < steps; s++) ctx.fillRect((d.x + s * RAIN_WIND) | 0, (d.y + s) | 0, 1, 1);
       d.y += d.sp;
+      d.x += d.sp * RAIN_WIND;
       if (d.y > CH) { d.y = -d.len; d.x = Math.random() * CW; }
+      else if (d.x > CW) d.x -= CW; else if (d.x < 0) d.x += CW;
     }
   }
 

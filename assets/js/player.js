@@ -151,6 +151,15 @@
   if (prevBtn) prevBtn.addEventListener("click", prev);
   if (nextBtn) nextBtn.addEventListener("click", next);
 
+  // Spacebar toggles play/pause anywhere on the page (except while typing in a field)
+  document.addEventListener("keydown", function (e) {
+    if (e.code !== "Space" && e.key !== " " && e.keyCode !== 32) return;
+    var el = document.activeElement, tag = el && el.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || (el && el.isContentEditable)) return;
+    e.preventDefault();
+    toggle();
+  });
+
   audio.addEventListener("play", function () {
     root.setAttribute("data-state", "playing");
     if (playBtn) { playBtn.textContent = "❙❙"; playBtn.setAttribute("aria-label", "Pause"); }
