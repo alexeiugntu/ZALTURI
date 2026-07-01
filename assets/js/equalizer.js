@@ -89,6 +89,7 @@
   var energy = 0.10, playing = false, clickCharge = 0, T = 0;
   var lastRetarget = 0, lastBeat = 0, lastLive = null;
   var realBands = null, realAt = 0;   // fed by player.js (real FFT); else procedural
+  var rainOn = false, drops = null;   // pixel rain overlay (toggled per-track by player.js)
   var liveEl = document.querySelector(".eq-live"), liveTxt = liveEl ? liveEl.querySelector(".txt") : null;
 
   function shape(c) { var x = c / (COLS - 1); return 0.55 + 0.45 * Math.pow(1 - x, 1.4); }
@@ -281,6 +282,25 @@
   function drawGraffiti() { var x = bx + 8, y = by + bh - 16; ctx.fillStyle = "rgba(192,68,10,0.85)"; ctx.fillRect(x, y, 8, 1); ctx.fillRect(x + 5, y + 1, 1, 1); ctx.fillRect(x + 4, y + 2, 1, 1); ctx.fillRect(x + 3, y + 3, 1, 1); ctx.fillRect(x + 2, y + 4, 1, 1); ctx.fillRect(x, y + 5, 8, 1); }
   function drawDoor() { var dw = cellW + GX, dx = Math.round(bx + bw / 2 - dw / 2); ctx.fillStyle = DOOR; ctx.fillRect(dx, by + bh - 4, dw, BASE + 4); ctx.fillStyle = FAC_LO; ctx.fillRect(dx - 3, by + bh - 6, dw + 6, 4); ctx.fillStyle = "rgba(232,197,106,0.6)"; ctx.fillRect(dx + dw / 2 - 2, by + bh - 4, 4, 3); }
 
+  function drawRain() {
+    if (!drops) {
+      drops = [];
+      var count = Math.round(CW / 4.5);
+      for (var i = 0; i < count; i++) {
+        drops.push({ x: Math.random() * CW, y: Math.random() * CH, len: 4 + Math.random() * 8, sp: 3.5 + Math.random() * 5, hot: Math.random() < 0.3 });
+      }
+    }
+    // cold night tint over the warm house, then pixel streaks falling
+    ctx.fillStyle = "rgba(26,42,68,0.16)"; ctx.fillRect(0, 0, CW, CH);
+    for (var j = 0; j < drops.length; j++) {
+      var d = drops[j];
+      ctx.fillStyle = d.hot ? "rgba(216,232,246,0.78)" : "rgba(158,186,214,0.55)";
+      ctx.fillRect(d.x | 0, d.y | 0, 1, d.len | 0);
+      d.y += d.sp;
+      if (d.y > CH) { d.y = -d.len; d.x = Math.random() * CW; }
+    }
+  }
+
   function draw() {
     ctx.fillStyle = SKY; ctx.fillRect(0, 0, CW, CH);
     var g = ctx.createRadialGradient(CW / 2, by - 4, 8, CW / 2, by - 4, CW * 0.7);
@@ -302,6 +322,7 @@
 
     for (var c = 0; c < COLS; c++) for (var f = 0; f < FLOORS; f++) drawWindow(c, f);
     drawWalkers();
+    if (rainOn) drawRain();
   }
 
   /* ---- loop ---- */
@@ -337,6 +358,7 @@
 
   /* ---- public hook: player.js drives play/pause + real spectrum ---- */
   window.ZALTURI_EQ = {
+    setRain: function (on) { rainOn = !!on; },
     setPlaying: function (on) { playing = !!on; if (!on) realAt = 0; },
     setBands: function (arr) {
       realBands = arr;

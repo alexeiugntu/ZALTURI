@@ -23,7 +23,7 @@
     { title: "Milky — Just The Way You Are (Zalturi bootleg)", file: "Milky - Just the way you are(Zalturi bootleg).wav", dur: "" },
     { title: "Kino — Peremen (Zalturi remix)", file: "kino - peremen(Zalturi remix).mp3", dur: "" },
     { title: "Salavat Fathetdinov — Salkyn Chey (Zalturi bootleg)", file: "salavat fathetdinov - sylkyn cheĭ(Zalturi bootleg).wav", dur: "" },
-    { title: "Tatyana Ovsienko — Dalnoboyschik (Zalturi remix)", file: "tatjyana ovsienko - daljnoboyschik(Zalturi remix).wav", dur: "" },
+    { title: "Tatyana Ovsienko — Dalnoboyschik (Zalturi remix)", file: "tatjyana ovsienko - daljnoboyschik(Zalturi remix).wav", dur: "", rain: true },
     { title: "Temnyy Princ, 9Mice — Jealous (Zalturi bootleg)", file: "temnyy princ, 9Mice - Jealous(Zalturi bootleg).wav", dur: "" },
     { title: "ZALTURI — Boginya", file: "Zalturi - BOGINYA.wav", dur: "" },
     { title: "ZALTURI — Bu Ispugalsya", file: "Zalturi - BU ISPUGALSYA.mp3", dur: "" },
@@ -154,13 +154,19 @@
   audio.addEventListener("play", function () {
     root.setAttribute("data-state", "playing");
     if (playBtn) { playBtn.textContent = "❙❙"; playBtn.setAttribute("aria-label", "Pause"); }
-    if (window.ZALTURI_EQ) window.ZALTURI_EQ.setPlaying(true);
+    if (window.ZALTURI_EQ) {
+      window.ZALTURI_EQ.setPlaying(true);
+      if (window.ZALTURI_EQ.setRain) window.ZALTURI_EQ.setRain(idx >= 0 && !!TRACKS[idx].rain);
+    }
     startFFT();
   });
   audio.addEventListener("pause", function () {
     root.setAttribute("data-state", "paused");
     if (playBtn) { playBtn.textContent = "▶"; playBtn.setAttribute("aria-label", "Play"); }
-    if (window.ZALTURI_EQ) window.ZALTURI_EQ.setPlaying(false);
+    if (window.ZALTURI_EQ) {
+      window.ZALTURI_EQ.setPlaying(false);
+      if (window.ZALTURI_EQ.setRain) window.ZALTURI_EQ.setRain(false);
+    }
   });
   audio.addEventListener("ended", function () { next(); });
   audio.addEventListener("loadedmetadata", function () {
