@@ -1,0 +1,264 @@
+/* =========================================================================
+   ZALTURI — player.js · System 7 amber player (R2-hosted tracks)
+   - playlist + transport + seek + volume
+   - per-track download (blob when CORS allows, else opens the file)
+   - feeds a real spectrum (Web Audio AnalyserNode) into "The block"
+     equalizer via window.ZALTURI_EQ (falls back to procedural if no CORS)
+   ========================================================================= */
+(function () {
+  "use strict";
+
+  /* =======================================================================
+     CONFIG  ·  fill these once R2 public access + CORS are set up.
+     R2_BASE : PUBLIC base URL that serves the audio files, ending in "/".
+               Must send CORS (Access-Control-Allow-Origin) for the real
+               spectrum + one-click downloads to work.
+     TRACKS  : order shown in the playlist. `file` must match the object key
+               exactly (case-sensitive). `dur` is optional (auto-filled from
+               metadata once a track loads).
+     ===================================================================== */
+  var R2_BASE = "https://audio.zalturi.com/Zalturi_tracks/";
+  var TRACKS = [
+    // ---- pinned order ----
+    { title: "Milky — Just The Way You Are (Zalturi bootleg)", file: "Milky - Just the way you are(Zalturi bootleg).wav", dur: "" },
+    { title: "Kino — Peremen (Zalturi remix)", file: "kino - peremen(Zalturi remix).mp3", dur: "" },
+    { title: "Salavat Fathetdinov — Salkyn Chey (Zalturi bootleg)", file: "salavat fathetdinov - sylkyn cheĭ(Zalturi bootleg).wav", dur: "" },
+    { title: "Tatyana Ovsienko — Dalnoboyschik (Zalturi remix)", file: "tatjyana ovsienko - daljnoboyschik(Zalturi remix).wav", dur: "" },
+    { title: "Temnyy Princ, 9Mice — Jealous (Zalturi bootleg)", file: "temnyy princ, 9Mice - Jealous(Zalturi bootleg).wav", dur: "" },
+    { title: "ZALTURI — Boginya", file: "Zalturi - BOGINYA.wav", dur: "" },
+    { title: "ZALTURI — Bu Ispugalsya", file: "Zalturi - BU ISPUGALSYA.mp3", dur: "" },
+    { title: "Hleb — Shashlyndos (Zalturi bootleg)", file: "hleb - shashlyndos(Zalturi bootleg).mp3", dur: "" },
+    { title: "Mc Poh — Banjka Parilka (Zalturi bootleg)", file: "Mc poh - banjka parilka (Zalturi bootleg).wav", dur: "" },
+    // ---- the rest ----
+    { title: "Fiollo — Manty", file: "Fiollo - manty.mp3", dur: "" },
+    { title: "Funky Town iz Shreka (Zalturi Edit)", file: "Funky town iz shreka(Zalturi Edit).mp3", dur: "" },
+    { title: "HOFMANNITA — Lapki (Rawdy remix)", file: "HOFMANNITA - lapki(Rawdy remix.mp3", dur: "" },
+    { title: "Ralfkon — Djyavol Nosit Prada (Zalturi bootleg)", file: "Ralfkon - djyavol nosit prada(Zalturi bootleg).mp3", dur: "" },
+    { title: "ZALTURI — Echpech Mac M1 (tatar pizdecy)", file: "Zalturi - (tatar pizdecy) echpech mac m1.wav", dur: "" },
+    { title: "ZALTURI — Vladimir Nuxuya", file: "Zalturi - Vladimir Nuxuya.mp3", dur: "" },
+    { title: "ZALTURI — Acha Dacha", file: "Zalturi - acha dacha.mp3", dur: "" },
+    { title: "ZALTURI — Bomji (kabaniy klyk)", file: "Zalturi - bomji(kabaniĭ klyk).mp3.wav", dur: "" },
+    { title: "ZALTURI — Edalovo 2", file: "Zalturi - edalovo 2.mp3", dur: "" },
+    { title: "ZALTURI — Intro Daljnoboy", file: "Zalturi - intro daljnoboy.wav", dur: "" },
+    { title: "ZALTURI — Poslednii Den v Bazzare", file: "Zalturi - poslednii den v bazzare.mp3", dur: "" },
+    { title: "ZALTURI — Rave of Tatar", file: "Zalturi - rave of tatar.wav", dur: "" },
+    { title: "ZALTURI — Sosat Cock", file: "Zalturi - sosat cock.wav", dur: "" },
+    { title: "Igorj Nikolaev — Deljfin i Rusalka (Zalturi bootleg)", file: "igorj nikolaev - deljfin i rusalka(Zalturi bootleg).wav", dur: "" },
+    { title: "Shura — Ty Ne Verj Slezam (Fiollo mix)", file: "shura - ty ne verj slezam(Fiollo mix).mp3", dur: "" },
+    { title: "Smeshariki Pizdec", file: "smeshariki pizdec.mp3", dur: "" },
+    { title: "Sveta — Hvatit Dovoljno (Zalturi remix)", file: "sveta - hvatit dovoljno(Zalturi remix).wav", dur: "" },
+    { title: "Tugan Yak (Zalturi house bootleg)", file: "tugan yak(Zalturi house bootleg).wav", dur: "" }
+  ];
+  /* ===================================================================== */
+
+  var root = document.getElementById("mac-player");
+  if (!root) return;
+  var audio = document.getElementById("mp-audio");
+  var listEl = root.querySelector(".mp-list");
+  var nowEl = root.querySelector(".mp-nowplaying");
+  var curEl = root.querySelector(".mp-cur");
+  var durEl = root.querySelector(".mp-dur");
+  var seek = root.querySelector(".mp-seek");
+  var seekFill = root.querySelector(".mp-seek-fill");
+  var playBtn = root.querySelector(".mp-play");
+  var prevBtn = root.querySelector(".mp-prev");
+  var nextBtn = root.querySelector(".mp-next");
+  var volEl = root.querySelector(".mp-vol input");
+  var dlBtn = root.querySelector(".mp-dl");
+
+  var idx = -1;
+  var rows = [];
+
+  function fileURL(t) { return R2_BASE + t.file.split("/").map(encodeURIComponent).join("/"); }
+  function fmt(s) {
+    if (!isFinite(s) || s < 0) s = 0;
+    var m = Math.floor(s / 60), ss = Math.floor(s % 60);
+    return m + ":" + (ss < 10 ? "0" : "") + ss;
+  }
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+
+  /* ---------------------------------------------------------------- list */
+  if (!TRACKS.length) {
+    var empty = document.createElement("li");
+    empty.className = "mp-empty";
+    empty.textContent = "no tracks configured yet";
+    listEl.appendChild(empty);
+  }
+  TRACKS.forEach(function (t, i) {
+    var li = document.createElement("li");
+    li.className = "mp-row";
+    li.setAttribute("role", "button");
+    li.setAttribute("tabindex", "0");
+    li.setAttribute("aria-current", "false");
+
+    var n = document.createElement("span"); n.className = "n"; n.textContent = pad(i + 1);
+    var tt = document.createElement("span"); tt.className = "t"; tt.textContent = t.title;
+    var d = document.createElement("span"); d.className = "d"; d.textContent = t.dur || "";
+    var dl = document.createElement("a");
+    dl.className = "dl";
+    dl.href = fileURL(t);
+    dl.setAttribute("download", t.file);
+    dl.setAttribute("title", "Download " + t.title);
+    dl.setAttribute("aria-label", "Download " + t.title);
+    dl.textContent = "⬇";
+
+    li.appendChild(n); li.appendChild(tt); li.appendChild(d); li.appendChild(dl);
+    listEl.appendChild(li);
+    rows.push({ li: li, d: d });
+
+    li.addEventListener("click", function (e) {
+      if (e.target.closest(".dl")) return;
+      select(i, true);
+    });
+    li.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(i, true); }
+    });
+    dl.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); download(i); });
+  });
+
+  /* -------------------------------------------------------------- select */
+  function select(i, autoplay) {
+    if (i < 0 || i >= TRACKS.length) return;
+    var t = TRACKS[i];
+    if (i !== idx) {
+      idx = i;
+      audio.src = fileURL(t);
+      nowEl.textContent = t.title;
+      if (dlBtn) { dlBtn.href = fileURL(t); dlBtn.setAttribute("download", t.file); }
+      curEl.textContent = "0:00";
+      durEl.textContent = t.dur || "0:00";
+      seekFill.style.width = "0%";
+      for (var r = 0; r < rows.length; r++) {
+        var on = r === idx;
+        rows[r].li.setAttribute("aria-current", on ? "true" : "false");
+      }
+    }
+    if (autoplay) play();
+  }
+
+  /* ------------------------------------------------------------- control */
+  function play() {
+    if (idx < 0) { select(0, false); }
+    initGraph();
+    if (actx && actx.state === "suspended") actx.resume();
+    var p = audio.play();
+    if (p && p.catch) p.catch(function () { /* gesture needed — user taps again */ });
+  }
+  function pause() { audio.pause(); }
+  function toggle() { audio.paused ? play() : pause(); }
+  function prev() { select(idx <= 0 ? TRACKS.length - 1 : idx - 1, true); }
+  function next() { select(idx >= TRACKS.length - 1 ? 0 : idx + 1, true); }
+
+  if (playBtn) playBtn.addEventListener("click", toggle);
+  if (prevBtn) prevBtn.addEventListener("click", prev);
+  if (nextBtn) nextBtn.addEventListener("click", next);
+  if (dlBtn) dlBtn.addEventListener("click", function (e) { e.preventDefault(); if (idx >= 0) download(idx); });
+
+  audio.addEventListener("play", function () {
+    root.setAttribute("data-state", "playing");
+    if (playBtn) { playBtn.textContent = "❙❙"; playBtn.setAttribute("aria-label", "Pause"); }
+    if (window.ZALTURI_EQ) window.ZALTURI_EQ.setPlaying(true);
+    startFFT();
+  });
+  audio.addEventListener("pause", function () {
+    root.setAttribute("data-state", "paused");
+    if (playBtn) { playBtn.textContent = "▶"; playBtn.setAttribute("aria-label", "Play"); }
+    if (window.ZALTURI_EQ) window.ZALTURI_EQ.setPlaying(false);
+  });
+  audio.addEventListener("ended", function () { next(); });
+  audio.addEventListener("loadedmetadata", function () {
+    durEl.textContent = fmt(audio.duration);
+    if (idx >= 0 && rows[idx] && !TRACKS[idx].dur) rows[idx].d.textContent = fmt(audio.duration);
+  });
+  audio.addEventListener("timeupdate", function () {
+    curEl.textContent = fmt(audio.currentTime);
+    if (audio.duration) seekFill.style.width = (audio.currentTime / audio.duration * 100) + "%";
+  });
+
+  /* CORS/crossorigin fallback: if the annotated media fails to load (usually
+     missing CORS on R2), retry once without crossorigin so playback still
+     works — the equalizer then stays on its procedural fallback. */
+  var triedNoCors = false;
+  audio.addEventListener("error", function () {
+    if (!triedNoCors && audio.getAttribute("crossorigin")) {
+      triedNoCors = true;
+      fftFailed = true;
+      audio.removeAttribute("crossorigin");
+      if (idx >= 0) {
+        var was = !audio.paused;
+        audio.src = fileURL(TRACKS[idx]);
+        audio.load();
+        if (was) play();
+      }
+    }
+  });
+
+  /* seek + volume */
+  if (seek) seek.addEventListener("click", function (e) {
+    if (!audio.duration) return;
+    var r = seek.getBoundingClientRect();
+    audio.currentTime = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * audio.duration;
+  });
+  if (volEl) {
+    audio.volume = 0.85; volEl.value = "0.85";
+    volEl.addEventListener("input", function () { audio.volume = parseFloat(volEl.value); });
+  }
+
+  /* ------------------------------------------------------------ download */
+  function download(i) {
+    var t = TRACKS[i], u = fileURL(t);
+    fetch(u, { mode: "cors" })
+      .then(function (r) { if (!r.ok) throw 0; return r.blob(); })
+      .then(function (b) {
+        var o = URL.createObjectURL(b);
+        var a = document.createElement("a");
+        a.href = o; a.download = t.file;
+        document.body.appendChild(a); a.click();
+        setTimeout(function () { URL.revokeObjectURL(o); a.remove(); }, 4000);
+      })
+      .catch(function () { window.open(u, "_blank", "noopener"); });
+  }
+
+  /* --------------------------------------------------- real spectrum FFT */
+  var actx = null, analyser = null, srcNode = null, freq = null, raf = 0;
+  var fftOn = false, fftFailed = false;
+  var COLS = 16, bands = new Float32Array(COLS);
+
+  function initGraph() {
+    if (fftOn || fftFailed) return;
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) { fftFailed = true; return; }
+    try {
+      actx = new AC();
+      srcNode = actx.createMediaElementSource(audio);
+      analyser = actx.createAnalyser();
+      analyser.fftSize = 128;
+      analyser.smoothingTimeConstant = 0.82;
+      srcNode.connect(analyser);
+      analyser.connect(actx.destination);
+      freq = new Uint8Array(analyser.frequencyBinCount);
+      fftOn = true;
+    } catch (e) { fftFailed = true; }
+  }
+  function startFFT() { if (fftOn && !raf) tick(); }
+  function tick() {
+    raf = requestAnimationFrame(tick);
+    if (!fftOn || audio.paused) { raf = 0; return; }
+    analyser.getByteFrequencyData(freq);
+    var n = freq.length;
+    for (var c = 0; c < COLS; c++) {
+      var lo = Math.floor(Math.pow(c / COLS, 1.6) * n);
+      var hi = Math.floor(Math.pow((c + 1) / COLS, 1.6) * n);
+      if (hi <= lo) hi = lo + 1;
+      if (hi > n) hi = n;
+      var sum = 0;
+      for (var k = lo; k < hi; k++) sum += freq[k];
+      var v = (sum / (hi - lo)) / 255;
+      bands[c] = Math.min(1, Math.pow(v, 0.85) * 1.15);
+    }
+    if (window.ZALTURI_EQ) window.ZALTURI_EQ.setBands(bands);
+  }
+
+  /* start on the first track selected (paused) so the UI reads as ready */
+  select(0, false);
+})();

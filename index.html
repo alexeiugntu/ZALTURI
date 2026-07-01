@@ -35,11 +35,11 @@
 <link rel="manifest" href="/site.webmanifest">
 
 <!-- perf -->
-<link rel="preconnect" href="https://w.soundcloud.com">
+<link rel="preconnect" href="https://audio.zalturi.com" crossorigin>
 <link rel="preload" href="/assets/fonts/press-start-2p.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/vt323.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" as="image" href="/assets/img/zalturi-character.png">
-<link rel="stylesheet" href="/assets/css/base.css?v=20260701a">
+<link rel="stylesheet" href="/assets/css/base.css?v=20260701b">
 
 <!-- structured data -->
 <script type="application/ld+json">
@@ -164,12 +164,31 @@
         <span class="badge">remix pack</span>
       </div>
 
-      <div class="player-shell">
-        <div class="player-frame">
-          <iframe id="sc-player" title="ZALTURI remix pack — SoundCloud player" loading="lazy" scrolling="no"
-            frameborder="no" allow="autoplay; encrypted-media"
-            src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/soundcloud%253Aplaylists%253A2258423573&color=%23c0440a&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=false"></iframe>
+      <div class="mac-player" id="mac-player" data-state="idle">
+        <div class="mp-titlebar">
+          <span class="mp-close" aria-hidden="true"></span>
+          <span class="mp-title">zalturi_player</span>
+          <span class="mp-live" aria-hidden="true"></span>
         </div>
+        <div class="mp-body">
+          <div class="mp-now">
+            <span class="mp-nowplaying">— select a track —</span>
+            <span class="mp-time"><span class="mp-cur">0:00</span> / <span class="mp-dur">0:00</span></span>
+          </div>
+          <div class="mp-seek" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="mp-seek-fill"></div></div>
+          <div class="mp-controls">
+            <button class="mp-btn mp-prev" type="button" aria-label="Previous track">◀◀</button>
+            <button class="mp-btn mp-play" type="button" aria-label="Play">▶</button>
+            <button class="mp-btn mp-next" type="button" aria-label="Next track">▶▶</button>
+            <a class="mp-btn mp-dl" href="#" aria-label="Download current track" title="Download current track">⬇</a>
+            <span class="mp-vol">
+              <span class="ic" aria-hidden="true">VOL</span>
+              <input type="range" min="0" max="1" step="0.01" value="0.85" aria-label="Volume">
+            </span>
+          </div>
+          <ol class="mp-list" aria-label="Playlist"></ol>
+        </div>
+        <audio id="mp-audio" crossorigin="anonymous" preload="none"></audio>
       </div>
 
       <div class="links-2">
@@ -212,8 +231,8 @@
 </footer>
 
 <script src="/assets/js/pixelate.js" defer></script>
-<script src="https://w.soundcloud.com/player/api.js" defer></script>
-<script src="/assets/js/equalizer.js" defer></script>
-<script src="/assets/js/radio.js?v=20260701a"></script>
+<script src="/assets/js/equalizer.js?v=20260701b" defer></script>
+<script src="/assets/js/player.js?v=20260701b" defer></script>
+<script src="/assets/js/radio.js?v=20260701b"></script>
 </body>
 </html>

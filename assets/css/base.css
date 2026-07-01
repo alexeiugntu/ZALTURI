@@ -832,6 +832,186 @@ a.card:hover::after { color: var(--z-amber); }
   background: #000;
 }
 .player-frame { overflow: hidden; border: 1px solid rgba(236,218,176,0.18); }
+
+/* ---- System 7 amber player (.mac-player) ---- */
+.mac-player {
+  border: 3px solid var(--z-border);
+  background: var(--z-card);
+  box-shadow: var(--shadow-hard), 0 0 0 2px rgba(212,168,67,0.10) inset;
+  color: var(--z-text-2);
+  font-family: var(--font-term);
+  image-rendering: pixelated;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.mp-titlebar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 6px;
+  background: var(--z-bg-3);
+  border-bottom: 3px solid var(--z-border);
+  overflow: hidden;
+}
+.mp-titlebar::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(0deg,
+    transparent 0 2px, rgba(212,168,67,0.55) 2px 3px);
+  opacity: 0.8;
+  pointer-events: none;
+}
+.mp-close {
+  position: relative; z-index: 1; flex: 0 0 auto;
+  width: 13px; height: 13px;
+  background: var(--z-card);
+  border: 2px solid var(--z-gold);
+  box-shadow: 0 0 0 2px var(--z-bg-3);
+}
+.mp-live {
+  position: relative; z-index: 1; flex: 0 0 auto;
+  width: 8px; height: 8px; margin-left: 8px;
+  background: var(--z-bg);
+  border: 2px solid var(--z-border);
+  box-shadow: 0 0 0 2px var(--z-bg-3);
+}
+.mac-player[data-state="playing"] .mp-live {
+  background: var(--z-moss);
+  border-color: var(--z-moss);
+  animation: z-blink 1.1s steps(2, start) infinite;
+}
+.mp-title {
+  position: relative; z-index: 1;
+  margin: 0 auto;
+  padding: 2px 12px;
+  background: var(--z-bg-3);
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  letter-spacing: 0.04em;
+  color: var(--z-amber);
+  text-transform: lowercase;
+  white-space: nowrap;
+}
+.mp-body { padding: 12px; display: grid; gap: 11px; }
+.mp-now {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.mp-nowplaying {
+  min-width: 0; flex: 1 1 auto;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-size: 22px; line-height: 1;
+  color: var(--z-text);
+}
+.mp-time {
+  flex: 0 0 auto;
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  color: var(--z-amber);
+  white-space: nowrap;
+}
+.mp-seek {
+  position: relative;
+  height: 16px;
+  background: #000;
+  border: 2px solid var(--z-border);
+  overflow: hidden;
+  cursor: url('/assets/img/cursor-pointer.png') 1 1, pointer;
+}
+.mp-seek-fill {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 0;
+  background: repeating-linear-gradient(90deg,
+    var(--z-amber) 0 5px, rgba(0,0,0,0.35) 5px 7px);
+}
+.mp-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.mp-btn {
+  min-width: 40px; min-height: 32px; padding: 0 10px;
+  background: var(--z-bg-3);
+  color: var(--z-amber);
+  border: 2px solid var(--z-border);
+  box-shadow: 3px 3px 0 #000;
+  font-family: var(--font-pixel);
+  font-size: 9px; line-height: 1;
+  text-decoration: none;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.mp-btn:active { transform: translate(3px, 3px); box-shadow: none; }
+.mp-play { min-width: 54px; background: var(--z-rust); color: var(--z-foam); border-color: var(--z-text-2); }
+.mac-player[data-state="playing"] .mp-play { background: var(--z-moss); }
+.mp-vol { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+.mp-vol .ic { font-family: var(--font-pixel); font-size: 8px; color: var(--z-muted); }
+.mp-vol input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  width: 84px; height: 8px; margin: 0;
+  background: #000;
+  border: 2px solid var(--z-border);
+  cursor: url('/assets/img/cursor-pointer.png') 1 1, pointer;
+}
+.mp-vol input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 10px; height: 16px;
+  background: var(--z-gold);
+  border: 2px solid var(--z-text-2);
+}
+.mp-vol input[type="range"]::-moz-range-thumb {
+  width: 10px; height: 16px; border-radius: 0;
+  background: var(--z-gold);
+  border: 2px solid var(--z-text-2);
+}
+.mp-list {
+  list-style: none; margin: 0; padding: 0;
+  max-height: 264px; overflow-y: auto;
+  background: #000;
+  border: 2px solid var(--z-border);
+  scrollbar-width: thin;
+  scrollbar-color: var(--z-border) #000;
+}
+.mp-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--z-border);
+  cursor: url('/assets/img/cursor-pointer.png') 1 1, pointer;
+}
+.mp-row:last-child { border-bottom: 0; }
+.mp-row:hover { background: rgba(212,168,67,0.09); }
+.mp-row .n {
+  flex: 0 0 auto; min-width: 22px;
+  font-family: var(--font-pixel); font-size: 8px; color: var(--z-muted);
+}
+.mp-row .t {
+  flex: 1 1 auto; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-size: 20px; color: var(--z-text-2);
+}
+.mp-row .d { flex: 0 0 auto; font-family: var(--font-pixel); font-size: 8px; color: var(--z-amber); }
+.mp-row .dl {
+  flex: 0 0 auto;
+  width: 28px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  text-decoration: none; font-size: 13px;
+  color: var(--z-amber);
+  background: var(--z-bg-3);
+  border: 2px solid var(--z-border);
+}
+.mp-row .dl:active { transform: translate(1px, 1px); }
+/* System 7 selection = inverted row */
+.mp-row[aria-current="true"] { background: var(--z-amber); }
+.mp-row[aria-current="true"] .t,
+.mp-row[aria-current="true"] .n,
+.mp-row[aria-current="true"] .d { color: #160a06; }
+.mp-row[aria-current="true"] .n::before { content: "\25b6 "; }
+.mp-row[aria-current="true"] .dl { background: #160a06; color: var(--z-amber); border-color: #160a06; }
+.mp-empty { padding: 14px 12px; font-family: var(--font-pixel); font-size: 8px; line-height: 1.8; color: var(--z-muted); }
+@media (max-width: 560px) {
+  .mp-nowplaying { font-size: 19px; }
+  .mp-row .t { font-size: 18px; }
+  .mp-controls { gap: 6px; }
+  .mp-vol input[type="range"] { width: 64px; }
+}
 .links-2 {
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;

@@ -86,6 +86,7 @@
 
   var energy = 0.10, playing = false, clickCharge = 0, T = 0;
   var lastRetarget = 0, lastBeat = 0, lastLive = null;
+  var realBands = null, realAt = 0;   // fed by player.js (real FFT); else procedural
   var liveEl = document.querySelector(".eq-live"), liveTxt = liveEl ? liveEl.querySelector(".txt") : null;
 
   function shape(c) { var x = c / (COLS - 1); return 0.55 + 0.45 * Math.pow(1 - x, 1.4); }
@@ -103,9 +104,15 @@
     setLive(playing);
     var eT = playing ? (0.74 + 0.16 * Math.sin(now / 2300)) : 0.10;
     energy += (eT - energy) * 0.02;
-    if (now - lastRetarget > 200) { for (var c = 0; c < COLS; c++) bandT[c] = energy * shape(c) * (0.45 + Math.random() * 0.6); lastRetarget = now; }
-    if (playing && now - lastBeat > 620) { for (var k = 0; k < 3; k++) bandT[k] = Math.min(1, bandT[k] + 0.4); lastBeat = now; }
-    for (var c2 = 0; c2 < COLS; c2++) band[c2] += (bandT[c2] - band[c2]) * 0.05;
+    var useReal = realBands && (now - realAt < 300);
+    if (useReal) {
+      for (var c = 0; c < COLS; c++) bandT[c] = realBands[c];
+    } else if (now - lastRetarget > 200) {
+      for (var c1 = 0; c1 < COLS; c1++) bandT[c1] = energy * shape(c1) * (0.45 + Math.random() * 0.6);
+      lastRetarget = now;
+    }
+    if (!useReal && playing && now - lastBeat > 620) { for (var k = 0; k < 3; k++) bandT[k] = Math.min(1, bandT[k] + 0.4); lastBeat = now; }
+    for (var c2 = 0; c2 < COLS; c2++) band[c2] += (bandT[c2] - band[c2]) * (useReal ? 0.12 : 0.05);
     for (var col = 0; col < COLS; col++) {
       var level = band[col] * FLOORS;
       for (var fl = 0; fl < FLOORS; fl++) {
@@ -326,18 +333,13 @@
     screen.addEventListener("pointerdown", function (e) { clickCharge = Math.min(1.6, clickCharge + 0.16); torch(e.clientX, e.clientY, 1); });
   }
 
-  /* ---- SoundCloud Widget API: real play/pause drives the equalizer ---- */
-  function bindSC(tries) {
-    if (window.SC && SC.Widget) {
-      try {
-        var wd = SC.Widget(document.getElementById("sc-player"));
-        wd.bind(SC.Widget.Events.PLAY, function () { playing = true; });
-        wd.bind(SC.Widget.Events.PAUSE, function () { playing = false; });
-        wd.bind(SC.Widget.Events.FINISH, function () { playing = false; });
-        return;
-      } catch (e) {}
+  /* ---- public hook: player.js drives play/pause + real spectrum ---- */
+  window.ZALTURI_EQ = {
+    setPlaying: function (on) { playing = !!on; if (!on) realAt = 0; },
+    setBands: function (arr) {
+      realBands = arr;
+      realAt = (window.performance && performance.now) ? performance.now() : Date.now();
+      playing = true;
     }
-    if (tries > 0) setTimeout(function () { bindSC(tries - 1); }, 400);
-  }
-  bindSC(15);
+  };
 })();
