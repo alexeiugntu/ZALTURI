@@ -7,7 +7,7 @@
   "use strict";
 
   var STREAM_URL = "https://stream-286.surfernetwork.com/1t7w7w8r7whvv";
-  var CSS_URL = "/assets/css/base.css?v=20260701b";
+  var CSS_URL = "/assets/css/base.css?v=20260701c";
   var STATION = "ZALTURI PIRATE STATION";
   var child = window.top !== window;
 
@@ -106,7 +106,7 @@
       if (!doc || !doc.head || doc.getElementById("zalturi-radio-frame-pad")) return;
       var style = doc.createElement("style");
       style.id = "zalturi-radio-frame-pad";
-      style.textContent = "html,body{overflow:hidden!important}body{padding-bottom:128px!important}@media(max-width:720px){body{padding-bottom:96px!important}}";
+      style.textContent = "html,body{overflow:hidden!important;min-height:0!important}body{padding-bottom:128px!important}@media(max-width:720px){body{padding-bottom:96px!important}}";
       doc.head.appendChild(style);
     }
 
@@ -150,8 +150,7 @@
           body.scrollHeight,
           html.offsetHeight,
           body.offsetHeight,
-          html.clientHeight,
-          window.innerHeight
+          html.clientHeight
         );
         frame.style.height = Math.ceil(height) + "px";
         document.documentElement.style.setProperty("--z-frame-height", Math.ceil(height) + "px");

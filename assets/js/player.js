@@ -64,7 +64,6 @@
   var prevBtn = root.querySelector(".mp-prev");
   var nextBtn = root.querySelector(".mp-next");
   var volEl = root.querySelector(".mp-vol input");
-  var dlBtn = root.querySelector(".mp-dl");
 
   var idx = -1;
   var rows = [];
@@ -124,7 +123,6 @@
       idx = i;
       audio.src = fileURL(t);
       nowEl.textContent = t.title;
-      if (dlBtn) { dlBtn.href = fileURL(t); dlBtn.setAttribute("download", t.file); }
       curEl.textContent = "0:00";
       durEl.textContent = t.dur || "0:00";
       seekFill.style.width = "0%";
@@ -152,7 +150,6 @@
   if (playBtn) playBtn.addEventListener("click", toggle);
   if (prevBtn) prevBtn.addEventListener("click", prev);
   if (nextBtn) nextBtn.addEventListener("click", next);
-  if (dlBtn) dlBtn.addEventListener("click", function (e) { e.preventDefault(); if (idx >= 0) download(idx); });
 
   audio.addEventListener("play", function () {
     root.setAttribute("data-state", "playing");
@@ -199,9 +196,16 @@
     var r = seek.getBoundingClientRect();
     audio.currentTime = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * audio.duration;
   });
+  var curVol = 0.85;
+  function applyVolume(v) {
+    curVol = v;
+    if (gainNode) { gainNode.gain.value = v; audio.volume = 1; }
+    else { audio.volume = v; }
+  }
   if (volEl) {
-    audio.volume = 0.85; volEl.value = "0.85";
-    volEl.addEventListener("input", function () { audio.volume = parseFloat(volEl.value); });
+    volEl.value = "0.85";
+    applyVolume(0.85);
+    volEl.addEventListener("input", function () { applyVolume(parseFloat(volEl.value)); });
   }
 
   /* ------------------------------------------------------------ download */
@@ -220,9 +224,9 @@
   }
 
   /* --------------------------------------------------- real spectrum FFT */
-  var actx = null, analyser = null, srcNode = null, freq = null, raf = 0;
+  var actx = null, analyser = null, srcNode = null, gainNode = null, freq = null, raf = 0;
   var fftOn = false, fftFailed = false;
-  var COLS = 16, bands = new Float32Array(COLS);
+  var COLS = 16, bands = new Float32Array(COLS), edges = null;
 
   function initGraph() {
     if (fftOn || fftFailed) return;
@@ -232,13 +236,29 @@
       actx = new AC();
       srcNode = actx.createMediaElementSource(audio);
       analyser = actx.createAnalyser();
-      analyser.fftSize = 128;
-      analyser.smoothingTimeConstant = 0.82;
+      analyser.fftSize = 2048;                 // ~21 Hz/bin @44.1k — real bass resolution
+      analyser.smoothingTimeConstant = 0.8;
+      // source -> analyser (taps full signal) -> gain (volume) -> output.
+      // GainNode drives volume so it works on iOS too (audio.volume is read-only there).
+      gainNode = actx.createGain();
+      gainNode.gain.value = curVol;
       srcNode.connect(analyser);
-      analyser.connect(actx.destination);
+      analyser.connect(gainNode);
+      gainNode.connect(actx.destination);
+      audio.volume = 1;
       freq = new Uint8Array(analyser.frequencyBinCount);
+      // log-spaced band edges 40 Hz .. 16 kHz; start at bin>=1 so the DC bin
+      // (never truly silent) can't light the leftmost column with no bass.
+      var binHz = actx.sampleRate / analyser.fftSize;
+      var fMin = 40, fMax = Math.min(16000, actx.sampleRate / 2);
+      edges = new Array(COLS + 1);
+      for (var e = 0; e <= COLS; e++) {
+        var bin = Math.round(fMin * Math.pow(fMax / fMin, e / COLS) / binHz);
+        edges[e] = bin < 1 ? 1 : bin;
+      }
+      for (e = 1; e <= COLS; e++) if (edges[e] <= edges[e - 1]) edges[e] = edges[e - 1] + 1;
       fftOn = true;
-    } catch (e) { fftFailed = true; }
+    } catch (e2) { fftFailed = true; }
   }
   function startFFT() { if (fftOn && !raf) tick(); }
   function tick() {
@@ -247,14 +267,14 @@
     analyser.getByteFrequencyData(freq);
     var n = freq.length;
     for (var c = 0; c < COLS; c++) {
-      var lo = Math.floor(Math.pow(c / COLS, 1.6) * n);
-      var hi = Math.floor(Math.pow((c + 1) / COLS, 1.6) * n);
-      if (hi <= lo) hi = lo + 1;
+      var lo = edges[c], hi = edges[c + 1];
+      if (lo >= n) lo = n - 1;
       if (hi > n) hi = n;
-      var sum = 0;
-      for (var k = lo; k < hi; k++) sum += freq[k];
-      var v = (sum / (hi - lo)) / 255;
-      bands[c] = Math.min(1, Math.pow(v, 0.85) * 1.15);
+      var sum = 0, cnt = 0;
+      for (var k = lo; k < hi; k++) { sum += freq[k]; cnt++; }
+      var v = cnt ? (sum / cnt) / 255 : 0;
+      // honest level, mild high-frequency tilt (music highs roll off)
+      bands[c] = Math.min(1, Math.pow(v, 0.9) * (1 + c * 0.025));
     }
     if (window.ZALTURI_EQ) window.ZALTURI_EQ.setBands(bands);
   }

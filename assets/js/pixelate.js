@@ -15,7 +15,9 @@
 
   var CELL = parseInt(img.getAttribute("data-cell") || "6", 10);
   var COLS = parseInt(img.getAttribute("data-cols") || "52", 10);
-  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // ZALTURI: force the hero to animate even under prefers-reduced-motion
+  // (brand choice; restore matchMedia to respect the OS setting).
+  var reduce = false;
 
   function start() {
     var iw = img.naturalWidth, ih = img.naturalHeight;

@@ -21,7 +21,9 @@
   if (!canvas) return;
   var ctx = canvas.getContext("2d");
   ctx.imageSmoothingEnabled = false;
-  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // ZALTURI: motion is core to the brand — the house animates even under
+  // prefers-reduced-motion (intentional; toggle back to matchMedia to respect it).
+  var reduce = false;
 
   /* ---- palette ---- */
   var SKY = "#1a1209", FAC = "#5b4a2c", FAC_LO = "#3a2c16",

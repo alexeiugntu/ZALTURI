@@ -893,7 +893,7 @@ a.card:hover::after { color: var(--z-amber); }
   text-transform: lowercase;
   white-space: nowrap;
 }
-.mp-body { padding: 12px; display: grid; gap: 11px; }
+.mp-body { padding: 12px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 11px; }
 .mp-now {
   display: flex;
   align-items: baseline;
