@@ -159,8 +159,7 @@ body.z-shell-host {
 }
 .pr-body {
   position: relative;
-  display: grid;
-  grid-template-columns: 52px minmax(0, 1fr) 60px;
+  display: flex;
   gap: 8px;
   align-items: stretch;
   padding: 8px;
@@ -186,6 +185,32 @@ body.z-shell-host {
       rgba(0,0,0,0.24) 3px, rgba(0,0,0,0.24) 5px);
 }
 .pr-body > * { position: relative; z-index: 2; }
+.pr-handle { display: flex; gap: 8px; flex: 0 0 auto; }
+.pr-toggle {
+  display: none;
+  flex: 0 0 26px;
+  align-items: center;
+  justify-content: center;
+  background: var(--z-gold);
+  border: 2px solid var(--z-text-2);
+  box-shadow: 4px 4px 0 #000;
+  color: #160a06;
+  font-family: var(--font-pixel);
+  font-size: 15px;
+  cursor: url('/assets/img/cursor-pointer.png') 1 1, pointer;
+}
+.pr-toggle:active { transform: translate(2px, 2px); box-shadow: 0 0 0 #000; }
+.pr-panel {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 60px;
+  grid-template-areas: "main bars" "controls controls";
+  gap: 8px;
+}
+.pr-main { grid-area: main; }
+.pr-bars { grid-area: bars; }
+.pr-controls { grid-area: controls; }
 .pr-play,
 .pr-main {
   border: 2px solid var(--z-border);
@@ -196,6 +221,7 @@ body.z-shell-host {
   box-shadow: 4px 4px 0 #000;
 }
 .pr-play {
+  flex: 0 0 52px;
   min-height: 54px;
   background: var(--z-rust);
   border-color: var(--z-text-2);
@@ -331,7 +357,6 @@ body.z-shell-host {
   70% { transform: translate(2px, 1px); }
 }
 .pr-controls {
-  grid-column: 1 / -1;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
   gap: 8px;
@@ -425,6 +450,22 @@ body.z-shell-host {
 }
 .pirate-radio[data-state="live"] .pr-status { color: var(--z-amber); }
 .pirate-radio[data-state="error"] .pr-status { color: var(--z-rust-2); }
+
+/* mobile: collapsed by default, slides out from the right; play works while collapsed */
+@media (max-width: 720px) {
+  .pirate-radio {
+    right: 0;
+    bottom: max(14px, env(safe-area-inset-bottom));
+    width: min(340px, calc(100vw - 14px));
+    transition: transform 0.32s cubic-bezier(0.2, 0.75, 0.25, 1);
+  }
+  .pr-toggle { display: flex; }
+  .pirate-radio:not(.is-expanded) { transform: translateX(calc(100% - 104px)); }
+  .pirate-radio.is-expanded { transform: translateX(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pirate-radio { transition: none; }
+}
 
 /* ---- accessibility helpers ---- */
 .sr-only {
@@ -1051,17 +1092,8 @@ a.card:hover::after { color: var(--z-amber); }
     top: 10px;
     right: 10px;
   }
-  .pirate-radio {
-    left: max(9px, env(safe-area-inset-left));
-    right: max(9px, env(safe-area-inset-right));
-    bottom: max(9px, env(safe-area-inset-bottom));
-    width: auto;
-  }
-  .pr-body {
-    grid-template-columns: 50px minmax(0, 1fr) 54px;
-    gap: 7px;
-    padding: 8px;
-  }
+  /* geometry/drawer for .pirate-radio lives in the earlier 720px block */
+  .pr-body { gap: 7px; }
   .pr-play { min-height: 52px; font-size: 7px; }
   .pr-main { min-height: 52px; padding: 7px 8px; }
   .pr-main strong { font-size: 7px; }

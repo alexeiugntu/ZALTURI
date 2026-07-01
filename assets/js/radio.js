@@ -7,7 +7,7 @@
   "use strict";
 
   var STREAM_URL = "https://stream-286.surfernetwork.com/1t7w7w8r7whvv";
-  var CSS_URL = "/assets/css/base.css?v=20260628f";
+  var CSS_URL = "/assets/css/base.css?v=20260701a";
   var STATION = "ZALTURI PIRATE STATION";
   var child = window.top !== window;
 
@@ -63,7 +63,7 @@
       document.body.className = "z-shell-host";
       document.body.innerHTML =
         '<div class="z-shell-scan" aria-hidden="true"></div>' +
-        '<iframe class="z-site-frame" title="ZALTURI site" src="about:blank" scrolling="no"></iframe>' +
+        '<iframe class="z-site-frame" title="ZALTURI site" src="about:blank" scrolling="no" allow="microphone; camera; autoplay; encrypted-media; clipboard-write; fullscreen" allowfullscreen></iframe>' +
         '<div class="z-frame-loading" aria-hidden="true"><span></span><b>tuning</b></div>';
 
       frame = document.querySelector(".z-site-frame");
@@ -106,7 +106,7 @@
       if (!doc || !doc.head || doc.getElementById("zalturi-radio-frame-pad")) return;
       var style = doc.createElement("style");
       style.id = "zalturi-radio-frame-pad";
-      style.textContent = "html,body{overflow:hidden!important}body{padding-bottom:140px!important}@media(max-width:720px){body{padding-bottom:176px!important}}";
+      style.textContent = "html,body{overflow:hidden!important}body{padding-bottom:128px!important}@media(max-width:720px){body{padding-bottom:96px!important}}";
       doc.head.appendChild(style);
     }
 
@@ -179,19 +179,24 @@
     root.setAttribute("aria-label", STATION);
     root.innerHTML =
       '<div class="pr-body">' +
-        '<button class="pr-play" type="button" aria-label="Play ZALTURI pirate station"><span>PLAY</span></button>' +
-        '<div class="pr-main">' +
-          '<span class="pr-kicker"><i></i> live radio</span>' +
-          '<strong class="pr-marquee" data-marquee><span class="pr-marquee-text">' + STATION + '</span></strong>' +
-          '<span class="pr-sub pr-marquee" data-marquee><span class="pr-marquee-text">bootleg signal / browser broadcast</span></span>' +
+        '<div class="pr-handle">' +
+          '<button class="pr-play" type="button" aria-label="Play ZALTURI pirate station"><span>PLAY</span></button>' +
+          '<button class="pr-toggle" type="button" aria-label="Expand radio" aria-expanded="false"><span class="pr-tg" aria-hidden="true">&lt;</span></button>' +
         '</div>' +
-        '<div class="pr-bars" aria-hidden="true">' +
-          '<span></span><span></span><span></span><span></span><span></span><span></span>' +
-        '</div>' +
-        '<div class="pr-controls">' +
-          '<p class="pr-copy pr-marquee" data-marquee><span class="pr-marquee-text">A dirty little receiver bolted to the page. It keeps running while you flip the site.</span></p>' +
-          '<label class="pr-volume"><span>VOL</span><input type="range" min="0" max="100" value="' + Math.round(audio.volume * 100) + '"></label>' +
-          '<span class="pr-status"><i></i><b>off air</b></span>' +
+        '<div class="pr-panel">' +
+          '<div class="pr-main">' +
+            '<span class="pr-kicker"><i></i> live radio</span>' +
+            '<strong class="pr-marquee" data-marquee><span class="pr-marquee-text">' + STATION + '</span></strong>' +
+            '<span class="pr-sub pr-marquee" data-marquee><span class="pr-marquee-text">bootleg signal / browser broadcast</span></span>' +
+          '</div>' +
+          '<div class="pr-bars" aria-hidden="true">' +
+            '<span></span><span></span><span></span><span></span><span></span><span></span>' +
+          '</div>' +
+          '<div class="pr-controls">' +
+            '<p class="pr-copy pr-marquee" data-marquee><span class="pr-marquee-text">A dirty little receiver bolted to the page. It keeps running while you flip the site.</span></p>' +
+            '<label class="pr-volume"><span>VOL</span><input type="range" min="0" max="100" value="' + Math.round(audio.volume * 100) + '"></label>' +
+            '<span class="pr-status"><i></i><b>off air</b></span>' +
+          '</div>' +
         '</div>' +
       '</div>';
 
@@ -206,6 +211,15 @@
       marqueeItems = Array.prototype.slice.call(root.querySelectorAll("[data-marquee]"));
 
       playButton.addEventListener("click", toggle);
+      var toggleBtn = root.querySelector(".pr-toggle");
+      if (toggleBtn) toggleBtn.addEventListener("click", function () {
+        var expanded = root.classList.toggle("is-expanded");
+        toggleBtn.setAttribute("aria-expanded", expanded ? "true" : "false");
+        toggleBtn.setAttribute("aria-label", expanded ? "Collapse radio" : "Expand radio");
+        var tg = toggleBtn.querySelector(".pr-tg");
+        if (tg) tg.textContent = expanded ? ">" : "<";
+        if (expanded) scheduleMarquees();
+      });
       volume.addEventListener("input", function () {
         audio.volume = Math.max(0, Math.min(1, Number(volume.value) / 100));
         syncVolumeUi();
@@ -270,6 +284,15 @@
     }
 
     function focusWidget() {
+      root.classList.add("is-expanded");
+      var tg = root.querySelector(".pr-toggle");
+      if (tg) {
+        tg.setAttribute("aria-expanded", "true");
+        tg.setAttribute("aria-label", "Collapse radio");
+        var s = tg.querySelector(".pr-tg");
+        if (s) s.textContent = ">";
+      }
+      scheduleMarquees();
       root.classList.remove("is-ping");
       void root.offsetWidth;
       root.classList.add("is-ping");
@@ -304,7 +327,7 @@
         item.style.removeProperty("--marquee-distance");
         item.style.removeProperty("--marquee-shift");
         item.style.removeProperty("--marquee-duration");
-        text.style.removeProperty("animationDelay");
+        text.style.removeProperty("animation-delay");
 
         var distance = text.scrollWidth - item.clientWidth;
         if (distance <= 2) return;
