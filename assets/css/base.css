@@ -998,6 +998,7 @@ a.card:hover::after { color: var(--z-amber); }
   border: 2px solid var(--z-border);
 }
 .mp-row .dl:active { transform: translate(1px, 1px); }
+.mp-row .dl svg { display: block; }
 /* System 7 selection = inverted row */
 .mp-row[aria-current="true"] { background: var(--z-amber); }
 .mp-row[aria-current="true"] .t,

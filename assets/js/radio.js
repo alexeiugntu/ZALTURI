@@ -7,7 +7,7 @@
   "use strict";
 
   var STREAM_URL = "https://stream-286.surfernetwork.com/1t7w7w8r7whvv";
-  var CSS_URL = "/assets/css/base.css?v=20260701c";
+  var CSS_URL = "/assets/css/base.css?v=20260701d";
   var STATION = "ZALTURI PIRATE STATION";
   var child = window.top !== window;
 

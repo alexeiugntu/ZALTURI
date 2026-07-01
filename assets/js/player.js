@@ -99,7 +99,7 @@
     dl.setAttribute("download", t.file);
     dl.setAttribute("title", "Download " + t.title);
     dl.setAttribute("aria-label", "Download " + t.title);
-    dl.textContent = "⬇";
+    dl.innerHTML = '<svg viewBox="0 0 12 12" width="13" height="13" fill="currentColor" aria-hidden="true"><rect x="5" y="1" width="2" height="6"/><path d="M2 6h8l-4 5z"/></svg>';
 
     li.appendChild(n); li.appendChild(tt); li.appendChild(d); li.appendChild(dl);
     listEl.appendChild(li);
