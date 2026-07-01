@@ -579,7 +579,7 @@ body.z-shell-host {
   color: var(--z-text) !important;
   text-align: center;
   text-transform: uppercase;
-  cursor: pointer;
+  cursor: url('/assets/img/cursor-pointer.png') 1 1, pointer;
   transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.12s ease, color 0.12s ease;
 }
 .btn:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 #000; }
@@ -1096,7 +1096,7 @@ a.card:hover::after { color: var(--z-amber); }
   box-shadow: inset 0 0 0 2px var(--z-bg-3);
   line-height: 0;
   overflow: hidden;
-  cursor: pointer;
+  cursor: url('/assets/img/cursor-pointer.png') 1 1, pointer;
 }
 .eq-screen canvas {
   display: block;
