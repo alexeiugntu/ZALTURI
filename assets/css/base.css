@@ -901,10 +901,16 @@ a.card:hover::after { color: var(--z-amber); }
   gap: 12px;
 }
 .mp-nowplaying {
+  position: relative;
   min-width: 0; flex: 1 1 auto;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   font-size: 22px; line-height: 1;
   color: var(--z-text);
+}
+.mp-now-text { display: inline-block; white-space: nowrap; will-change: transform; }
+.mp-nowplaying.is-marquee .mp-now-text {
+  padding-right: 22px;
+  animation: pr-marquee var(--marquee-duration, 18s) linear infinite;
 }
 .mp-time {
   flex: 0 0 auto;
@@ -1314,7 +1320,8 @@ a.card:hover::after { color: var(--z-amber); }
 /* ---- motion ---- */
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
-  .pirate-radio .pr-marquee.is-marquee .pr-marquee-text {
+  .pirate-radio .pr-marquee.is-marquee .pr-marquee-text,
+  .mp-nowplaying.is-marquee .mp-now-text {
     animation-duration: var(--marquee-duration, 18s) !important;
     animation-iteration-count: infinite !important;
     animation-name: pr-marquee !important;

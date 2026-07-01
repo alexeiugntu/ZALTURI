@@ -56,6 +56,7 @@
   var audio = document.getElementById("mp-audio");
   var listEl = root.querySelector(".mp-list");
   var nowEl = root.querySelector(".mp-nowplaying");
+  var nowTextEl = root.querySelector(".mp-now-text");
   var curEl = root.querySelector(".mp-cur");
   var durEl = root.querySelector(".mp-dur");
   var seek = root.querySelector(".mp-seek");
@@ -130,7 +131,8 @@
     if (i !== idx) {
       idx = i;
       audio.src = fileURL(t);
-      nowEl.textContent = t.title;
+      if (nowTextEl) nowTextEl.textContent = t.title;
+      scheduleMarquee();
       updateMetadata(t);
       curEl.textContent = "0:00";
       durEl.textContent = t.dur || "0:00";
@@ -328,6 +330,35 @@
     }
     if (window.ZALTURI_EQ) window.ZALTURI_EQ.setBands(bands);
   }
+
+  /* now-playing marquee — scroll the title only when it doesn't fit the field */
+  var marqTimer = 0;
+  function scheduleMarquee() {
+    if (marqTimer) cancelAnimationFrame(marqTimer);
+    marqTimer = requestAnimationFrame(refreshMarquee);
+  }
+  function refreshMarquee() {
+    marqTimer = 0;
+    if (!nowEl || !nowTextEl) return;
+    nowEl.classList.remove("is-marquee");
+    nowEl.style.removeProperty("--marquee-shift");
+    nowEl.style.removeProperty("--marquee-duration");
+    nowTextEl.style.removeProperty("animation-delay");
+    var distance = nowTextEl.scrollWidth - nowEl.clientWidth;
+    if (distance <= 2) return;                       // fits — stay static
+    distance += 22;
+    nowEl.style.setProperty("--marquee-shift", "-" + distance + "px");
+    nowEl.style.setProperty("--marquee-duration", Math.max(9, Math.min(24, distance / 9)).toFixed(1) + "s");
+    nowTextEl.style.animationDelay = "1.2s";
+    void nowTextEl.offsetWidth;
+    nowEl.classList.add("is-marquee");
+  }
+  window.addEventListener("resize", scheduleMarquee);
+  window.addEventListener("orientationchange", scheduleMarquee);
+  window.addEventListener("pageshow", scheduleMarquee);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(scheduleMarquee);
+  // re-measure as the (iframe) layout + fonts settle, so overflow is caught reliably
+  [150, 500, 1200, 2500].forEach(function (dl) { window.setTimeout(scheduleMarquee, dl); });
 
   /* start on the first track selected (paused) so the UI reads as ready */
   select(0, false);
