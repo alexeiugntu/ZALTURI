@@ -153,10 +153,14 @@
 
   // Spacebar toggles play/pause anywhere on the page (except while typing in a field)
   document.addEventListener("keydown", function (e) {
+    if (e.repeat) return;
     if (e.code !== "Space" && e.key !== " " && e.keyCode !== 32) return;
     var el = document.activeElement, tag = el && el.tagName;
     if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || (el && el.isContentEditable)) return;
     e.preventDefault();
+    // if a player button has focus, drop focus so its native Space-activation
+    // can't fire a second toggle (which would cancel out the start)
+    if (el && el.blur && (el === playBtn || el === prevBtn || el === nextBtn)) el.blur();
     toggle();
   });
 

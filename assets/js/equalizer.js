@@ -89,7 +89,7 @@
   var energy = 0.10, playing = false, clickCharge = 0, T = 0;
   var lastRetarget = 0, lastBeat = 0, lastLive = null;
   var realBands = null, realAt = 0;   // fed by player.js (real FFT); else procedural
-  var rainOn = false, drops = null;   // pixel rain overlay (toggled per-track by player.js)
+  var rainOn = false, drops = null, puddles = null;   // pixel rain overlay (toggled per-track by player.js)
   var liveEl = document.querySelector(".eq-live"), liveTxt = liveEl ? liveEl.querySelector(".txt") : null;
 
   function shape(c) { var x = c / (COLS - 1); return 0.55 + 0.45 * Math.pow(1 - x, 1.4); }
@@ -301,6 +301,29 @@
       d.x += d.sp * RAIN_WIND;
       if (d.y > CH) { d.y = -d.len; d.x = Math.random() * CW; }
       else if (d.x > CW) d.x -= CW; else if (d.x < 0) d.x += CW;
+    }
+    // --- wet, reflective ground with puddles ---
+    ctx.fillStyle = "rgba(64,94,130,0.20)"; ctx.fillRect(0, CH - 11, CW, 11);   // wet sheen across the ground
+    if (!puddles) {
+      puddles = [];
+      var pn = 5;
+      for (var p = 0; p < pn; p++) {
+        puddles.push({ cx: (CW / (pn + 1)) * (p + 1) + (Math.random() * 22 - 11), w: 44 + Math.random() * 50, ph: Math.random() * 6.28 });
+      }
+    }
+    var py = CH - 8;
+    for (var pj = 0; pj < puddles.length; pj++) {
+      var pu = puddles[pj], hw = pu.w / 2;
+      ctx.fillStyle = "rgba(96,128,164,0.42)"; ctx.fillRect((pu.cx - hw) | 0, py, pu.w | 0, 5);
+      ctx.fillStyle = "rgba(206,228,246,0.55)"; ctx.fillRect((pu.cx - hw + 2) | 0, py, (pu.w - 4) | 0, 1);   // bright reflection edge
+      var sh = pu.cx - hw + 3 + (0.5 + 0.5 * Math.sin(T * 0.003 + pu.ph)) * (pu.w - 8);
+      ctx.fillStyle = "rgba(240,248,255,0.7)"; ctx.fillRect(sh | 0, py + 2, 4, 1);                            // moving shimmer
+      ctx.fillStyle = "rgba(232,197,106,0.34)"; ctx.fillRect((pu.cx - hw + pu.w * 0.34) | 0, py + 3, 2, 1);   // warm house-light reflection
+    }
+    for (var tk = 0; tk < 3; tk++) {
+      var pk = puddles[(Math.random() * puddles.length) | 0];
+      ctx.fillStyle = "rgba(226,242,255,0.6)";
+      ctx.fillRect((pk.cx - pk.w / 2 + Math.random() * pk.w) | 0, py - 1 - ((Math.random() * 3) | 0), 1, 2);
     }
   }
 
