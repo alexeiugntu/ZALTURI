@@ -7,7 +7,7 @@
   "use strict";
 
   var STREAM_URL = "https://stream-286.surfernetwork.com/1t7w7w8r7whvv";
-  var CSS_URL = "/assets/css/base.css?v=20260701k";
+  var CSS_URL = "/assets/css/base.css?v=20260701l";
   var STATION = "ZALTURI PIRATE STATION";
   var child = window.top !== window;
 
@@ -23,6 +23,9 @@
 
   if (window.__zalturiRadioBooted) return;
   window.__zalturiRadioBooted = true;
+
+  // shared audio bus so the radio and the in-iframe player never play at once
+  var audioBus = ("BroadcastChannel" in window) ? new BroadcastChannel("zalturi-audio") : null;
 
   function ready(fn) {
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn, { once: true });
@@ -249,6 +252,10 @@
         setState("off", "off air");
       });
       audio.addEventListener("error", function () { clearTuneTimer(); setState("error", "signal lost"); });
+
+      // when the radio starts, tell the player to stop; pause when the player starts
+      audio.addEventListener("play", function () { try { if (audioBus) audioBus.postMessage({ from: "radio" }); } catch (e) {} });
+      if (audioBus) audioBus.onmessage = function (e) { if (e.data && e.data.from === "player" && !audio.paused) audio.pause(); };
 
       setState("off", "off air");
       syncVolumeUi();

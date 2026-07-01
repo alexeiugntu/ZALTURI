@@ -71,6 +71,9 @@
   // survives screen lock / backgrounding on iOS. Desktop keeps the real-FFT graph.
   var mobileLike = !!(window.matchMedia && window.matchMedia("(hover: none) and (pointer: coarse)").matches);
   var MS = ("mediaSession" in navigator) ? navigator.mediaSession : null;
+  // shared audio bus so the player and the pirate radio never play at once
+  var audioBus = ("BroadcastChannel" in window) ? new BroadcastChannel("zalturi-audio") : null;
+  if (audioBus) audioBus.onmessage = function (e) { if (e.data && e.data.from === "radio" && !audio.paused) audio.pause(); };
 
   function fileURL(t) { return R2_BASE + t.file.split("/").map(encodeURIComponent).join("/"); }
   function fmt(s) {
@@ -190,6 +193,7 @@
 
   audio.addEventListener("play", function () {
     root.setAttribute("data-state", "playing");
+    if (audioBus) try { audioBus.postMessage({ from: "player" }); } catch (e) {}
     if (MS) MS.playbackState = "playing";
     if (playBtn) { playBtn.textContent = "❙❙"; playBtn.setAttribute("aria-label", "Pause"); }
     if (window.ZALTURI_EQ) {
