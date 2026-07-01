@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /worker/
 
 Sitemap: https://zalturi.com/sitemap.xml

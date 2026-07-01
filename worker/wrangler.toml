@@ -5,7 +5,7 @@ compatibility_date = "2024-11-01"
 
 # KV: create a namespace, then paste its id here (or bind in the dashboard)
 kv_namespaces = [
-  { binding = "CONFIG", id = "PASTE_KV_NAMESPACE_ID" }
+  { binding = "CONFIG", id = "1debb3c366324c28ae6d95f10dcbea06" }
 ]
 
 # R2: the existing audio bucket, so the panel can list tracks

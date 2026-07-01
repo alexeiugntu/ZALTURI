@@ -84,7 +84,10 @@
   }
   function pad(n) { return (n < 10 ? "0" : "") + n; }
 
-  /* ---------------------------------------------------------------- list */
+  /* ------------------------------------------------------------- playlist */
+  function buildList() {
+  listEl.innerHTML = "";
+  rows = [];
   if (!TRACKS.length) {
     var empty = document.createElement("li");
     empty.className = "mp-empty";
@@ -123,6 +126,7 @@
     });
     dl.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); download(i); });
   });
+  }
 
   /* -------------------------------------------------------------- select */
   function select(i, autoplay) {
@@ -200,7 +204,7 @@
     if (playBtn) { playBtn.textContent = "❙❙"; playBtn.setAttribute("aria-label", "Pause"); }
     if (window.ZALTURI_EQ) {
       window.ZALTURI_EQ.setPlaying(true);
-      if (window.ZALTURI_EQ.setRain) window.ZALTURI_EQ.setRain(idx >= 0 && !!TRACKS[idx].rain);
+      if (window.ZALTURI_EQ.setRain) window.ZALTURI_EQ.setRain(idx >= 0 && !!(TRACKS[idx].rain || TRACKS[idx].fx === "rain"));
     }
     startFFT();
   });
@@ -360,6 +364,20 @@
   // re-measure as the (iframe) layout + fonts settle, so overflow is caught reliably
   [150, 500, 1200, 2500].forEach(function (dl) { window.setTimeout(scheduleMarquee, dl); });
 
-  /* start on the first track selected (paused) so the UI reads as ready */
-  select(0, false);
+  /* load the live config from the control panel, then build the playlist.
+     falls back to the baked-in TRACKS if the worker is slow/unreachable (3s cap). */
+  function raceTimeout(p, ms) {
+    return Promise.race([p, new Promise(function (r) { setTimeout(function () { r(null); }, ms); })]);
+  }
+  raceTimeout(
+    fetch("https://zalturi-admin.zalturi.workers.dev/config", { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; }),
+    3000
+  ).then(function (cfg) {
+    if (cfg && Array.isArray(cfg.tracks) && cfg.tracks.length) TRACKS = cfg.tracks;
+    buildList();
+    select(0, false);
+    scheduleMarquee();
+  });
 })();

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>zalturi_admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/assets/fonts/press-start-2p.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/vt323.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/css/base.css?v=20260701o">
+<style>
+  body { padding: 22px 16px 80px; }
+  .aw { max-width: 900px; margin: 0 auto; }
+  .win { border: 3px solid var(--z-border); background: var(--z-card); box-shadow: var(--shadow-hard); margin-bottom: 20px; }
+  .win-bar { position: relative; display: flex; align-items: center; height: 26px; padding: 0 8px; background: var(--z-bg-3); border-bottom: 3px solid var(--z-border); overflow: hidden; }
+  .win-bar::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, transparent 0 2px, rgba(212,168,67,.5) 2px 3px); opacity: .8; pointer-events: none; }
+  .win-bar b { position: relative; z-index: 1; margin: 0 auto; padding: 2px 12px; background: var(--z-bg-3); font-family: var(--font-pixel); font-size: 8px; color: var(--z-amber); text-transform: lowercase; }
+  .win-body { padding: 16px; }
+  h2.sec { font-family: var(--font-pixel); font-size: 10px; color: var(--z-amber); text-transform: uppercase; margin: 4px 0 14px; }
+  label { display: block; margin: 0 0 12px; font-size: 19px; color: var(--z-text-2); }
+  label span.k { display: block; font-family: var(--font-pixel); font-size: 8px; color: var(--z-muted); text-transform: uppercase; margin-bottom: 5px; }
+  input[type=text], input[type=password], input[type=url], select, textarea {
+    width: 100%; box-sizing: border-box; padding: 9px 10px; background: #000; color: var(--z-text);
+    border: 2px solid var(--z-border); font-family: var(--font-term); font-size: 19px; }
+  textarea { min-height: 66px; resize: vertical; line-height: 1.15; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--z-gold); }
+  .btn2 { font-family: var(--font-pixel); font-size: 9px; padding: 9px 12px; background: var(--z-bg-3); color: var(--z-amber);
+    border: 2px solid var(--z-border); box-shadow: 3px 3px 0 #000; text-transform: uppercase; }
+  .btn2:active { transform: translate(3px,3px); box-shadow: none; }
+  .btn2.primary { background: var(--z-rust); color: var(--z-foam); border-color: var(--z-text-2); }
+  .btn2.mini { font-size: 8px; padding: 6px 7px; box-shadow: 2px 2px 0 #000; }
+  #login { max-width: 360px; margin: 8vh auto 0; }
+  #login .win-body { display: grid; gap: 12px; }
+  #pl { list-style: none; margin: 0; padding: 0; }
+  .row { display: grid; grid-template-columns: 26px 1fr 150px 74px auto; gap: 7px; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--z-border); }
+  .row .num { font-family: var(--font-pixel); font-size: 8px; color: var(--z-muted); }
+  .row .acts { display: flex; gap: 4px; }
+  .addrow { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .addrow select { flex: 1 1 auto; min-width: 180px; }
+  .topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  .topbar h1 { font-family: var(--font-pixel); font-size: 16px; color: var(--z-gold); margin: 0; text-shadow: 2px 2px 0 var(--z-rust); }
+  #status { font-family: var(--font-pixel); font-size: 8px; color: var(--z-muted); margin-left: auto; }
+  #status.ok { color: var(--z-moss); }
+  #status.err { color: var(--z-rust-2); }
+  .hint { font-family: var(--font-pixel); font-size: 8px; color: var(--z-muted); line-height: 1.7; margin: 6px 0 0; }
+  .fxtag { font-family: var(--font-pixel); font-size: 8px; color: var(--z-amber); }
+  @media (max-width: 640px) {
+    .row { grid-template-columns: 22px 1fr auto; grid-auto-rows: auto; }
+    .row .t-file, .row .t-fx { grid-column: 2 / -1; }
+  }
+</style>
+</head>
+<body class="crt">
+<div class="aw">
+
+  <!-- LOGIN -->
+  <div class="win" id="login">
+    <div class="win-bar"><b>zalturi_admin — login</b></div>
+    <div class="win-body">
+      <label><span class="k">password</span><input type="password" id="pw" autocomplete="current-password"></label>
+      <button class="btn2 primary" id="loginBtn">Enter</button>
+      <p class="hint" id="loginMsg"></p>
+    </div>
+  </div>
+
+  <!-- EDITOR -->
+  <div id="editor" hidden>
+    <div class="topbar">
+      <h1>ZALTURI · control</h1>
+      <span id="status"></span>
+      <button class="btn2 primary" id="saveBtn">Save → live</button>
+    </div>
+
+    <div class="win">
+      <div class="win-bar"><b>playlist</b></div>
+      <div class="win-body">
+        <ol id="pl"></ol>
+        <div class="addrow">
+          <select id="addSel"><option value="">— add a track from R2 —</option></select>
+          <button class="btn2" id="addBtn">+ add</button>
+          <button class="btn2 mini" id="refreshBtn">↻ files</button>
+        </div>
+        <p class="hint">title = shown in the player · file = R2 object · fx = house effect · ↑/↓ reorder · ✕ remove</p>
+      </div>
+    </div>
+
+    <div class="win">
+      <div class="win-bar"><b>radio</b></div>
+      <div class="win-body">
+        <label><span class="k">stream url</span><input type="url" id="r_stream"></label>
+        <label><span class="k">station name</span><input type="text" id="r_station"></label>
+        <label><span class="k">subtitle</span><input type="text" id="r_sub"></label>
+        <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="r_enabled" style="width:auto"> <span class="k" style="margin:0">widget enabled</span></label>
+      </div>
+    </div>
+
+    <div class="win">
+      <div class="win-bar"><b>texts &amp; links</b></div>
+      <div class="win-body">
+        <label><span class="k">hero line 1</span><input type="text" id="c_hero1"></label>
+        <label><span class="k">hero line 2</span><input type="text" id="c_hero2"></label>
+        <label><span class="k">listen — title</span><input type="text" id="c_ltitle"></label>
+        <label><span class="k">listen — intro</span><textarea id="c_lintro"></textarea></label>
+        <label><span class="k">soundcloud url</span><input type="url" id="c_sc"></label>
+        <p class="hint">radio &amp; texts apply on the site as the wiring lands — playlist is already live.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script src="/admin/admin.js?v=1"></script>
+</body>
+</html>
