@@ -110,12 +110,27 @@
     var useReal = realBands && (now - realAt < 300);
     if (useReal) {
       for (var c = 0; c < COLS; c++) bandT[c] = realBands[c];
+    } else if (playing) {
+      // musical pseudo-spectrum (used on mobile / when no Web-Audio FFT):
+      // kick drum pumps the bass, hi-hats shimmer up top, columns dance out of phase,
+      // accent on every 4th beat — so it reads as reacting to the track.
+      var beatMs = 460, phase = (now % beatMs) / beatMs;
+      var kick = (1 - phase) * (1 - phase);
+      var accent = (((now / beatMs) | 0) % 4 === 0) ? 1.22 : 1.0;
+      for (var c1 = 0; c1 < COLS; c1++) {
+        var x = c1 / (COLS - 1);
+        var wob = 0.5 + 0.5 * Math.sin(now * (0.006 + c1 * 0.0012) + c1 * 1.3);
+        var lvl = energy * (0.34 + 0.5 * wob)
+                + kick * accent * 0.6 * Math.pow(1 - x, 1.5)
+                + Math.pow(x, 1.2) * 0.26 * (0.4 + 0.6 * Math.sin(now * 0.019 + c1));
+        if (Math.random() < 0.03) lvl += 0.3 * Math.random();
+        bandT[c1] = lvl < 0 ? 0 : (lvl > 1 ? 1 : lvl);
+      }
     } else if (now - lastRetarget > 200) {
-      for (var c1 = 0; c1 < COLS; c1++) bandT[c1] = energy * shape(c1) * (0.45 + Math.random() * 0.6);
+      for (var c3 = 0; c3 < COLS; c3++) bandT[c3] = energy * shape(c3) * (0.45 + Math.random() * 0.6);
       lastRetarget = now;
     }
-    if (!useReal && playing && now - lastBeat > 620) { for (var k = 0; k < 3; k++) bandT[k] = Math.min(1, bandT[k] + 0.4); lastBeat = now; }
-    for (var c2 = 0; c2 < COLS; c2++) band[c2] += (bandT[c2] - band[c2]) * (useReal ? 0.12 : 0.05);
+    for (var c2 = 0; c2 < COLS; c2++) band[c2] += (bandT[c2] - band[c2]) * (useReal ? 0.12 : (playing ? 0.24 : 0.05));
     for (var col = 0; col < COLS; col++) {
       var level = band[col] * FLOORS;
       for (var fl = 0; fl < FLOORS; fl++) {
