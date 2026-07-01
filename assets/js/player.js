@@ -67,6 +67,10 @@
 
   var idx = -1;
   var rows = [];
+  // Touch devices: play the <audio> natively (no Web Audio graph) so playback
+  // survives screen lock / backgrounding on iOS. Desktop keeps the real-FFT graph.
+  var mobileLike = !!(window.matchMedia && window.matchMedia("(hover: none) and (pointer: coarse)").matches);
+  var MS = ("mediaSession" in navigator) ? navigator.mediaSession : null;
 
   function fileURL(t) { return R2_BASE + t.file.split("/").map(encodeURIComponent).join("/"); }
   function fmt(s) {
@@ -110,7 +114,8 @@
       select(i, true);
     });
     li.addEventListener("keydown", function (e) {
-      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(i, true); }
+      // Enter selects the row; Space is reserved for the global play/pause toggle
+      if (e.key === "Enter") { e.preventDefault(); select(i, true); }
     });
     dl.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); download(i); });
   });
@@ -123,6 +128,7 @@
       idx = i;
       audio.src = fileURL(t);
       nowEl.textContent = t.title;
+      updateMetadata(t);
       curEl.textContent = "0:00";
       durEl.textContent = t.dur || "0:00";
       seekFill.style.width = "0%";
@@ -147,6 +153,24 @@
   function prev() { select(idx <= 0 ? TRACKS.length - 1 : idx - 1, true); }
   function next() { select(idx >= TRACKS.length - 1 ? 0 : idx + 1, true); }
 
+  function updateMetadata(t) {
+    if (!MS || !window.MediaMetadata) return;
+    try {
+      MS.metadata = new MediaMetadata({
+        title: t.title, artist: "ZALTURI", album: "ZALTURI — free pack",
+        artwork: [{ src: "https://zalturi.com/assets/img/apple-touch-icon.png", sizes: "180x180", type: "image/png" }]
+      });
+    } catch (e) {}
+  }
+  if (MS) {
+    try {
+      MS.setActionHandler("play", function () { play(); });
+      MS.setActionHandler("pause", function () { pause(); });
+      MS.setActionHandler("previoustrack", function () { prev(); });
+      MS.setActionHandler("nexttrack", function () { next(); });
+    } catch (e) {}
+  }
+
   if (playBtn) playBtn.addEventListener("click", toggle);
   if (prevBtn) prevBtn.addEventListener("click", prev);
   if (nextBtn) nextBtn.addEventListener("click", next);
@@ -166,6 +190,7 @@
 
   audio.addEventListener("play", function () {
     root.setAttribute("data-state", "playing");
+    if (MS) MS.playbackState = "playing";
     if (playBtn) { playBtn.textContent = "❙❙"; playBtn.setAttribute("aria-label", "Pause"); }
     if (window.ZALTURI_EQ) {
       window.ZALTURI_EQ.setPlaying(true);
@@ -175,6 +200,7 @@
   });
   audio.addEventListener("pause", function () {
     root.setAttribute("data-state", "paused");
+    if (MS) MS.playbackState = "paused";
     if (playBtn) { playBtn.textContent = "▶"; playBtn.setAttribute("aria-label", "Play"); }
     if (window.ZALTURI_EQ) {
       window.ZALTURI_EQ.setPlaying(false);
@@ -249,6 +275,7 @@
 
   function initGraph() {
     if (fftOn || fftFailed) return;
+    if (mobileLike) { fftFailed = true; return; }   // native playback on touch → survives screen lock
     var AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) { fftFailed = true; return; }
     try {
