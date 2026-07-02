@@ -2,112 +2,139 @@
   "tracks": [
     {
       "title": "Milky — Just The Way You Are (Zalturi bootleg)",
-      "file": "Milky - Just the way you are(Zalturi bootleg).wav"
+      "file": "Milky - Just the way you are(Zalturi bootleg).wav",
+      "dur": "4:18"
     },
     {
       "title": "Kino — Peremen (Zalturi remix)",
-      "file": "kino - peremen(Zalturi remix).mp3"
+      "file": "kino - peremen(Zalturi remix).mp3",
+      "dur": "2:42"
     },
     {
       "title": "Salavat Fathetdinov — Salkyn Chey (Zalturi bootleg)",
-      "file": "salavat fathetdinov - sylkyn cheĭ(Zalturi bootleg).wav"
+      "file": "salavat fathetdinov - sylkyn cheĭ(Zalturi bootleg).wav",
+      "dur": "2:53"
     },
     {
       "title": "Tatyana Ovsienko — Dalnoboyschik (Zalturi remix)",
       "file": "tatjyana ovsienko - daljnoboyschik(Zalturi remix).wav",
-      "fx": "rain"
+      "fx": "rain",
+      "dur": "3:03"
     },
     {
       "title": "Temnyy Princ, 9Mice — Jealous (Zalturi bootleg)",
-      "file": "temnyy princ, 9Mice - Jealous(Zalturi bootleg).wav"
+      "file": "temnyy princ, 9Mice - Jealous(Zalturi bootleg).wav",
+      "dur": "2:17"
     },
     {
       "title": "ZALTURI — Boginya",
-      "file": "Zalturi - BOGINYA.wav"
+      "file": "Zalturi - BOGINYA.wav",
+      "dur": "3:35"
     },
     {
       "title": "ZALTURI — Bu Ispugalsya",
-      "file": "Zalturi - BU ISPUGALSYA.mp3"
+      "file": "Zalturi - BU ISPUGALSYA.mp3",
+      "dur": "3:00"
     },
     {
       "title": "Hleb — Shashlyndos (Zalturi bootleg)",
-      "file": "hleb - shashlyndos(Zalturi bootleg).mp3"
+      "file": "hleb - shashlyndos(Zalturi bootleg).mp3",
+      "dur": "3:02"
     },
     {
       "title": "Mc Poh — Banjka Parilka (Zalturi bootleg)",
-      "file": "Mc poh - banjka parilka (Zalturi bootleg).wav"
+      "file": "Mc poh - banjka parilka (Zalturi bootleg).wav",
+      "dur": "2:36"
     },
     {
       "title": "Fiollo — Manty",
-      "file": "Fiollo - manty.mp3"
+      "file": "Fiollo - manty.mp3",
+      "dur": "2:01"
     },
     {
       "title": "Funky Town iz Shreka (Zalturi Edit)",
-      "file": "Funky town iz shreka(Zalturi Edit).mp3"
+      "file": "Funky town iz shreka(Zalturi Edit).mp3",
+      "dur": "1:44"
     },
     {
       "title": "HOFMANNITA — Lapki (Rawdy remix)",
-      "file": "HOFMANNITA - lapki(Rawdy remix.mp3"
+      "file": "HOFMANNITA - lapki(Rawdy remix.mp3",
+      "dur": "2:58"
     },
     {
       "title": "Ralfkon — Djyavol Nosit Prada (Zalturi bootleg)",
-      "file": "Ralfkon - djyavol nosit prada(Zalturi bootleg).mp3"
+      "file": "Ralfkon - djyavol nosit prada(Zalturi bootleg).mp3",
+      "dur": "2:37"
     },
     {
       "title": "ZALTURI — Echpech Mac M1 (tatar pizdecy)",
-      "file": "Zalturi - (tatar pizdecy) echpech mac m1.wav"
+      "file": "Zalturi - (tatar pizdecy) echpech mac m1.wav",
+      "dur": "2:42"
     },
     {
       "title": "ZALTURI — Vladimir Nuxuya",
-      "file": "Zalturi - Vladimir Nuxuya.mp3"
+      "file": "Zalturi - Vladimir Nuxuya.mp3",
+      "dur": "3:05"
     },
     {
       "title": "ZALTURI — Acha Dacha",
-      "file": "Zalturi - acha dacha.mp3"
+      "file": "Zalturi - acha dacha.mp3",
+      "dur": "2:05"
     },
     {
       "title": "ZALTURI — Bomji (kabaniy klyk)",
-      "file": "Zalturi - bomji(kabaniĭ klyk).mp3.wav"
+      "file": "Zalturi - bomji(kabaniĭ klyk).mp3.wav",
+      "dur": "3:46"
     },
     {
       "title": "ZALTURI — Edalovo 2",
-      "file": "Zalturi - edalovo 2.mp3"
+      "file": "Zalturi - edalovo 2.mp3",
+      "dur": "1:38"
     },
     {
       "title": "ZALTURI — Intro Daljnoboy",
-      "file": "Zalturi - intro daljnoboy.wav"
+      "file": "Zalturi - intro daljnoboy.wav",
+      "dur": "2:57"
     },
     {
       "title": "ZALTURI — Poslednii Den v Bazzare",
-      "file": "Zalturi - poslednii den v bazzare.mp3"
+      "file": "Zalturi - poslednii den v bazzare.mp3",
+      "dur": "2:54"
     },
     {
       "title": "ZALTURI — Rave of Tatar",
-      "file": "Zalturi - rave of tatar.wav"
+      "file": "Zalturi - rave of tatar.wav",
+      "dur": "2:40"
     },
     {
       "title": "ZALTURI — Sosat Cock",
-      "file": "Zalturi - sosat cock.wav"
+      "file": "Zalturi - sosat cock.wav",
+      "dur": "2:09"
     },
     {
       "title": "Igorj Nikolaev — Deljfin i Rusalka (Zalturi bootleg)",
-      "file": "igorj nikolaev - deljfin i rusalka(Zalturi bootleg).wav"
+      "file": "igorj nikolaev - deljfin i rusalka(Zalturi bootleg).wav",
+      "dur": "3:35"
     },
     {
       "title": "Shura — Ty Ne Verj Slezam (Fiollo mix)",
-      "file": "shura - ty ne verj slezam(Fiollo mix).mp3"
+      "file": "shura - ty ne verj slezam(Fiollo mix).mp3",
+      "dur": "1:26"
     },
     {
       "title": "Smeshariki Pizdec",
-      "file": "smeshariki pizdec.mp3"
+      "file": "smeshariki pizdec.mp3",
+      "dur": "3:14"
     },
     {
       "title": "Sveta — Hvatit Dovoljno (Zalturi remix)",
-      "file": "sveta - hvatit dovoljno(Zalturi remix).wav"
+      "file": "sveta - hvatit dovoljno(Zalturi remix).wav",
+      "dur": "2:29"
     },
     {
       "title": "Tugan Yak (Zalturi house bootleg)",
-      "file": "tugan yak(Zalturi house bootleg).wav"
+      "file": "tugan yak(Zalturi house bootleg).wav",
+      "dur": "3:00"
     }
   ],
   "radio": {

@@ -8,7 +8,7 @@
 <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="/assets/fonts/press-start-2p.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/vt323.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/base.css?v=20260701p">
+<link rel="stylesheet" href="/assets/css/base.css?v=20260701q">
 <style>
   body { padding: 22px 16px 80px; }
   .aw { max-width: 900px; margin: 0 auto; }
@@ -38,16 +38,20 @@
   .row .acts { display: flex; gap: 4px; }
   .addrow { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
   .addrow select { flex: 1 1 auto; min-width: 180px; }
-  .topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  .topbar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 12px; margin-bottom: 18px; padding: 10px 0 12px; background: var(--z-bg); }
   .topbar h1 { font-family: var(--font-pixel); font-size: 16px; color: var(--z-gold); margin: 0; text-shadow: 2px 2px 0 var(--z-rust); }
   #status { font-family: var(--font-pixel); font-size: 8px; color: var(--z-muted); margin-left: auto; }
   #status.ok { color: var(--z-moss); }
   #status.err { color: var(--z-rust-2); }
-  .hint { font-family: var(--font-pixel); font-size: 8px; color: var(--z-muted); line-height: 1.7; margin: 6px 0 0; }
-  .fxtag { font-family: var(--font-pixel); font-size: 8px; color: var(--z-amber); }
+  .hint { font-family: var(--font-pixel); font-size: 9px; color: var(--z-muted); line-height: 1.7; margin: 6px 0 0; }
+  .fxtag { font-family: var(--font-pixel); font-size: 9px; color: var(--z-amber); }
   @media (max-width: 640px) {
     .row { grid-template-columns: 22px 1fr auto; grid-auto-rows: auto; }
     .row .t-file, .row .t-fx { grid-column: 2 / -1; }
+  }
+  @media (hover: none) and (pointer: coarse) {
+    .btn2.mini { min-width: 40px; min-height: 40px; }
+    .row .acts { gap: 6px; }
   }
 </style>
 </head>
@@ -109,6 +113,6 @@
   </div>
 
 </div>
-<script src="/admin/admin.js?v=2"></script>
+<script src="/admin/admin.js?v=3"></script>
 </body>
 </html>

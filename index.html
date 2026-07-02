@@ -39,7 +39,7 @@
 <link rel="preload" href="/assets/fonts/press-start-2p.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/vt323.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" as="image" href="/assets/img/zalturi-character.png">
-<link rel="stylesheet" href="/assets/css/base.css?v=20260701p">
+<link rel="stylesheet" href="/assets/css/base.css?v=20260701q">
 
 <!-- structured data -->
 <script type="application/ld+json">
@@ -95,6 +95,7 @@
         <a class="btn btn-main" href="#listen">▶ Play the pack</a>
         <a class="btn btn-ghost" href="#zalturi-radio" data-radio-open>Live pirate radio</a>
       </div>
+      <p class="hero-scroll"><i>▼</i>more signal below</p>
     </div>
 
     <div class="art" aria-hidden="false">
@@ -142,10 +143,10 @@
           <h2 class="section-title" id="block-h" style="margin-bottom:8px">The block</h2>
           <p class="eq-sub">Our panel house. Press play and the windows wake up with the music — one column per frequency, slow and warm.</p>
         </div>
-        <span class="eq-live"><span class="dot" aria-hidden="true"></span><span class="txt">idle</span></span>
       </div>
       <div class="eq-screen" id="eq-screen">
         <canvas id="eq-canvas" role="img" aria-label="Pixel-art Soviet panel house whose windows light up like an equalizer when the music plays"></canvas>
+        <span class="eq-live"><span class="dot" aria-hidden="true"></span><span class="txt">idle</span></span>
       </div>
       <p class="eq-hint">press play below · or tap the house</p>
     </div>
@@ -166,6 +167,7 @@
         <div class="mp-titlebar">
           <span class="mp-close" aria-hidden="true"></span>
           <span class="mp-title">zalturi_player</span>
+          <span class="mp-count"></span>
           <span class="mp-live" aria-hidden="true"></span>
         </div>
         <div class="mp-body">
@@ -210,6 +212,13 @@
     <p style="margin-top:24px"><a class="btn btn-main" href="/arcade/">Enter the arcade →</a></p>
   </section>
 
+  <!-- TOOLS TEASER -->
+  <section class="wrap section" aria-labelledby="tools-h">
+    <h2 class="section-title" id="tools-h" style="text-shadow:3px 3px 0 var(--z-rust),6px 6px 0 #000">Audio tools</h2>
+    <p class="prose lead">Analyzer, tuner, autotune — free, in your browser, nothing uploaded.</p>
+    <p style="margin-top:24px"><a class="btn btn-ghost" href="/tools/">Open the tools →</a></p>
+  </section>
+
 </main>
 
 <footer class="wrap footer">
@@ -223,9 +232,9 @@
   </div>
 </footer>
 
-<script src="/assets/js/pixelate.js?v=20260701p" defer></script>
-<script src="/assets/js/equalizer.js?v=20260701p" defer></script>
-<script src="/assets/js/player.js?v=20260701p" defer></script>
-<script src="/assets/js/radio.js?v=20260701p"></script>
+<script src="/assets/js/pixelate.js?v=20260701q" defer></script>
+<script src="/assets/js/equalizer.js?v=20260701q" defer></script>
+<script src="/assets/js/player.js?v=20260701q" defer></script>
+<script src="/assets/js/radio.js?v=20260701q"></script>
 </body>
 </html>

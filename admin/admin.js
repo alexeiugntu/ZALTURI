@@ -2,6 +2,7 @@
 (function () {
   "use strict";
   var API = "https://zalturi-admin.zalturi.workers.dev";
+  var R2_BASE = "https://audio.zalturi.com/Zalturi_tracks/";
   var pw = sessionStorage.getItem("zalturiAdminPw") || "";
   var files = [];
   var cfg = { tracks: [], radio: {}, content: {} };
@@ -63,6 +64,7 @@
     cfg.tracks.forEach(function (t, i) {
       var li = document.createElement("li");
       li.className = "row";
+      li.setAttribute("data-dur", t.dur || "");
       li.innerHTML =
         '<span class="num">' + (i + 1 < 10 ? "0" : "") + (i + 1) + '</span>' +
         '<input class="t-title" type="text" value="' + esc(t.title || "") + '">' +
@@ -72,7 +74,12 @@
       ol.appendChild(li);
       li.querySelector(".up").onclick = function () { move(i, -1); };
       li.querySelector(".down").onclick = function () { move(i, 1); };
-      li.querySelector(".rm").onclick = function () { collect(); cfg.tracks.splice(i, 1); renderPlaylist(); };
+      li.querySelector(".rm").onclick = function () {
+        collect();
+        if (!confirm('Remove "' + (cfg.tracks[i] && cfg.tracks[i].title || "") + '" from the playlist?')) return;
+        cfg.tracks.splice(i, 1);
+        renderPlaylist();
+      };
     });
     var used = {}; cfg.tracks.forEach(function (t) { used[t.file] = 1; });
     var html = '<option value="">— add a track from R2 —</option>';
@@ -93,8 +100,10 @@
       var file = r.querySelector(".t-file").value;
       var title = r.querySelector(".t-title").value.trim();
       var fx = r.querySelector(".t-fx").value;
+      var dur = r.getAttribute("data-dur") || "";
       var o = { title: title || file, file: file };
       if (fx) o.fx = fx;
+      if (dur) o.dur = dur;
       arr.push(o);
     });
     cfg.tracks = arr;
@@ -106,7 +115,22 @@
     collect();
     cfg.tracks.push({ title: f.replace(/\.[^.]+$/, ""), file: f });
     renderPlaylist();
+    probeDuration(f);
   };
+  /* fill the track's duration from the audio metadata (async, non-blocking) */
+  function probeDuration(file) {
+    var a = new Audio();
+    a.preload = "metadata";
+    a.src = R2_BASE + file.split("/").map(encodeURIComponent).join("/");
+    a.addEventListener("loadedmetadata", function () {
+      if (!isFinite(a.duration) || a.duration <= 0) return;
+      var m = Math.floor(a.duration / 60), s = Math.floor(a.duration % 60);
+      var dur = m + ":" + (s < 10 ? "0" : "") + s;
+      collect();
+      cfg.tracks.forEach(function (t) { if (t.file === file && !t.dur) t.dur = dur; });
+      renderPlaylist();
+    });
+  }
   $("refreshBtn").onclick = function () {
     status("refreshing files…");
     loadFiles().then(function () { collect(); renderPlaylist(); status("files refreshed", "ok"); }).catch(function () { status("failed", "err"); });

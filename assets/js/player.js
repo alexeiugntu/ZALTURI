@@ -88,6 +88,8 @@
   function buildList() {
   listEl.innerHTML = "";
   rows = [];
+  var cnt = root.querySelector(".mp-count");
+  if (cnt) cnt.textContent = TRACKS.length + " tracks";
   if (!TRACKS.length) {
     var empty = document.createElement("li");
     empty.className = "mp-empty";
@@ -183,6 +185,12 @@
   if (playBtn) playBtn.addEventListener("click", toggle);
   if (prevBtn) prevBtn.addEventListener("click", prev);
   if (nextBtn) nextBtn.addEventListener("click", next);
+
+  // the house equalizer starts playback on tap ("...or tap the house")
+  window.ZALTURI_PLAYER = {
+    toggle: toggle,
+    playIfPaused: function () { if (audio.paused) play(); }
+  };
 
   // Spacebar toggles play/pause anywhere on the page (except while typing in a field)
   document.addEventListener("keydown", function (e) {

@@ -394,7 +394,13 @@
   var screen = document.getElementById("eq-screen");
   if (screen && !reduce) {
     screen.addEventListener("pointermove", function (e) { torch(e.clientX, e.clientY, 1); });
-    screen.addEventListener("pointerdown", function (e) { clickCharge = Math.min(1.6, clickCharge + 0.16); torch(e.clientX, e.clientY, 1); });
+    screen.addEventListener("pointerdown", function (e) {
+      clickCharge = Math.min(1.6, clickCharge + 0.16);
+      torch(e.clientX, e.clientY, 1);
+      // "…or tap the house" — first tap starts the player (never pauses,
+      // so playing with the windows doesn't stop the music)
+      if (window.ZALTURI_PLAYER) window.ZALTURI_PLAYER.playIfPaused();
+    });
   }
 
   /* ---- public hook: player.js drives play/pause + real spectrum ---- */
