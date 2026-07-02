@@ -47,6 +47,18 @@ function authed(request, env) {
   return checkPassword(h.replace(/^Bearer\s+/i, ""), env);
 }
 
+/* per-IP fail counter in KV — blunts password brute force on the /admin/* routes.
+   KV is eventually consistent, so the cap is approximate; fine for this threat model. */
+const RL_MAX = 10, RL_TTL_SECONDS = 600;
+async function rateState(request, env) {
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+  const fails = parseInt((await env.CONFIG.get("rl:" + ip)) || "0", 10);
+  return { ip, fails, blocked: fails >= RL_MAX };
+}
+async function recordFail(env, st) {
+  await env.CONFIG.put("rl:" + st.ip, String(st.fails + 1), { expirationTtl: RL_TTL_SECONDS });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -68,15 +80,21 @@ export default {
 
     // ---- admin: verify the password (for the login screen) ----
     if (path === "/admin/login" && request.method === "POST") {
+      const rl = await rateState(request, env);
+      if (rl.blocked) return json({ error: "too many attempts" }, 429, origin);
       let pw = "";
       try { pw = (await request.json()).password || ""; } catch (e) {}
       const ok = checkPassword(pw, env);
+      if (ok) await env.CONFIG.delete("rl:" + rl.ip);
+      else await recordFail(env, rl);
       return json({ ok: ok }, ok ? 200 : 401, origin);
     }
 
     // ---- admin: list audio files in R2 so tracks can be picked ----
     if (path === "/admin/tracks" && request.method === "GET") {
-      if (!authed(request, env)) return json({ error: "unauthorized" }, 401, origin);
+      const rlT = await rateState(request, env);
+      if (rlT.blocked) return json({ error: "too many attempts" }, 429, origin);
+      if (!authed(request, env)) { await recordFail(env, rlT); return json({ error: "unauthorized" }, 401, origin); }
       const out = [];
       let cursor;
       do {
@@ -93,7 +111,9 @@ export default {
 
     // ---- admin: save the whole config to KV ----
     if (path === "/admin/save" && request.method === "POST") {
-      if (!authed(request, env)) return json({ error: "unauthorized" }, 401, origin);
+      const rlS = await rateState(request, env);
+      if (rlS.blocked) return json({ error: "too many attempts" }, 429, origin);
+      if (!authed(request, env)) { await recordFail(env, rlS); return json({ error: "unauthorized" }, 401, origin); }
       let cfg;
       try { cfg = await request.json(); } catch (e) { return json({ error: "bad json" }, 400, origin); }
       if (typeof cfg !== "object" || cfg === null) return json({ error: "bad config" }, 400, origin);

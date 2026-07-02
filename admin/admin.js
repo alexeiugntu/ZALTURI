@@ -87,8 +87,10 @@
   }
   function collect() {
     var arr = [];
+    // keep empty-file rows too — move/remove are index-based, so the array must
+    // stay aligned with the DOM; empties are dropped at save time instead.
     Array.prototype.forEach.call($("pl").querySelectorAll(".row"), function (r) {
-      var file = r.querySelector(".t-file").value; if (!file) return;
+      var file = r.querySelector(".t-file").value;
       var title = r.querySelector(".t-title").value.trim();
       var fx = r.querySelector(".t-fx").value;
       var o = { title: title || file, file: file };
@@ -124,7 +126,10 @@
 
   /* ---- save ---- */
   $("saveBtn").onclick = function () {
-    collect(); status("saving…");
+    collect();
+    cfg.tracks = cfg.tracks.filter(function (t) { return t.file; });
+    renderPlaylist();
+    status("saving…");
     fetch(API + "/admin/save", { method: "POST", headers: Object.assign({ "Content-Type": "application/json" }, auth()), body: JSON.stringify(cfg) })
       .then(function (r) { if (r.status === 401) { status("unauthorized — re-login", "err"); throw 1; } if (!r.ok) throw 0; return r.json(); })
       .then(function (j) { if (j && j.ok) status("saved ✓ live", "ok"); })

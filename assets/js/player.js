@@ -375,7 +375,11 @@
       .catch(function () { return null; }),
     3000
   ).then(function (cfg) {
-    if (cfg && Array.isArray(cfg.tracks) && cfg.tracks.length) TRACKS = cfg.tracks;
+    // accept only well-formed tracks — one bad entry must not kill the playlist
+    var list = (cfg && Array.isArray(cfg.tracks) ? cfg.tracks : []).filter(function (t) {
+      return t && typeof t.file === "string" && t.file;
+    });
+    if (list.length) TRACKS = list;
     buildList();
     select(0, false);
     scheduleMarquee();

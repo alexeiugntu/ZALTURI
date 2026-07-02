@@ -9,3 +9,6 @@ desktop.ini
 # never commit node stuff (this is a no-build static site)
 node_modules/
 npm-debug.log*
+
+# wrangler local cache — the repo IS the public site (GitHub Pages serves everything)
+worker/.wrangler/
