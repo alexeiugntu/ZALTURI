@@ -15,7 +15,10 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 if [ "$#" -gt 0 ]; then
   urls=("$@")
 else
-  mapfile -t urls < <(grep -o '<loc>[^<]*</loc>' "$DIR/sitemap.xml" | sed 's#</\?loc>##g')
+  urls=()
+  while IFS= read -r line; do
+    urls+=("$line")
+  done < <(grep -o '<loc>[^<]*</loc>' "$DIR/sitemap.xml" | sed 's#<loc>##g; s#</loc>##g')
 fi
 
 json_urls=$(printf '"%s",' "${urls[@]}")
