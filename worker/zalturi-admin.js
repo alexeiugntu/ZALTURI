@@ -7,10 +7,13 @@
      Secret (var)   -> ADMIN_PASSWORD  (your panel password, "Encrypt")
 
    Routes:
-     GET  /config          public — the live site reads this (KV or {})
-     POST /admin/login     { password } -> { ok }        (UX check)
-     GET  /admin/tracks    Bearer <pw> -> { files:[...] } (R2 listing)
-     POST /admin/save      Bearer <pw>, body=config JSON -> saves to KV
+     GET  /config           public — the live site reads this (KV or {})
+     POST /hit               public — one pageview beacon (deduped per IP+day)
+     POST /hit-download      public — { file } -> +1 download count for that track
+     POST /admin/login       { password } -> { ok }        (UX check)
+     GET  /admin/tracks      Bearer <pw> -> { files:[...] } (R2 listing)
+     POST /admin/save        Bearer <pw>, body=config JSON -> saves to KV
+     GET  /admin/stats       Bearer <pw> -> { days:[...], visits:{date:n}, downloads:{file:n} }
    ========================================================================= */
 
 const ALLOWED_ORIGINS = ["https://zalturi.com", "https://www.zalturi.com"];
@@ -59,6 +62,18 @@ async function recordFail(env, st) {
   await env.CONFIG.put("rl:" + st.ip, String(st.fails + 1), { expirationTtl: RL_TTL_SECONDS });
 }
 
+/* ---- lightweight analytics: unique daily visitors + per-track downloads ----
+   KV read-modify-write isn't atomic, so concurrent hits can occasionally lose an
+   increment — fine here, these are approximate counts for the site owner, not
+   billing. Visits are deduped per IP per UTC day (closer to "unique visitors"
+   than raw pageviews, and it naturally caps trivial refresh-spam); downloads are
+   not deduped since each is a deliberate button click, not a passive page load. */
+function dayKey(d) { return d.toISOString().slice(0, 10); }
+async function incr(env, key) {
+  const cur = parseInt((await env.CONFIG.get(key)) || "0", 10);
+  await env.CONFIG.put(key, String(cur + 1));
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -76,6 +91,28 @@ export default {
           cors(origin)
         )
       });
+    }
+
+    // ---- public: count a pageview (deduped per IP per day) ----
+    if (path === "/hit" && request.method === "POST") {
+      const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+      const day = dayKey(new Date());
+      const seenKey = "seen:" + day + ":" + ip;
+      if (!(await env.CONFIG.get(seenKey))) {
+        await env.CONFIG.put(seenKey, "1", { expirationTtl: 90000 }); // ~25h, covers the UTC day in any timezone
+        await incr(env, "visits:" + day);
+      }
+      return json({ ok: true }, 200, origin);
+    }
+
+    // ---- public: count a track download ----
+    if (path === "/hit-download" && request.method === "POST") {
+      let file = "";
+      try { file = (await request.json()).file || ""; } catch (e) {}
+      file = String(file).slice(0, 300);
+      if (!file) return json({ error: "missing file" }, 400, origin);
+      await incr(env, "dl:" + file);
+      return json({ ok: true }, 200, origin);
     }
 
     // ---- admin: verify the password (for the login screen) ----
@@ -121,6 +158,33 @@ export default {
       cfg.updatedAt = new Date().toISOString();
       await env.CONFIG.put("site", JSON.stringify(cfg));
       return json({ ok: true, updatedAt: cfg.updatedAt }, 200, origin);
+    }
+
+    // ---- admin: last 30 days of visits + all-time per-track download counts ----
+    if (path === "/admin/stats" && request.method === "GET") {
+      const rlA = await rateState(request, env);
+      if (rlA.blocked) return json({ error: "too many attempts" }, 429, origin);
+      if (!authed(request, env)) { await recordFail(env, rlA); return json({ error: "unauthorized" }, 401, origin); }
+
+      const now = Date.now();
+      const days = [];
+      for (let i = 29; i >= 0; i--) days.push(dayKey(new Date(now - i * 86400000)));
+      const visits = {};
+      await Promise.all(days.map(async (d) => {
+        visits[d] = parseInt((await env.CONFIG.get("visits:" + d)) || "0", 10);
+      }));
+
+      const downloads = {};
+      let cursor;
+      do {
+        const list = await env.CONFIG.list({ prefix: "dl:", cursor });
+        await Promise.all(list.keys.map(async (k) => {
+          downloads[k.name.slice(3)] = parseInt((await env.CONFIG.get(k.name)) || "0", 10);
+        }));
+        cursor = list.list_complete ? null : list.cursor;
+      } while (cursor);
+
+      return json({ days: days, visits: visits, downloads: downloads }, 200, origin);
     }
 
     return json({ error: "not found", path: path }, 404, origin);

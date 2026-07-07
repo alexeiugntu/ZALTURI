@@ -8,7 +8,7 @@
 <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="/assets/fonts/press-start-2p.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/vt323.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/base.css?v=20260701q">
+<link rel="stylesheet" href="/assets/css/base.css?v=20260701r">
 <style>
   body { padding: 22px 16px 80px; }
   .aw { max-width: 900px; margin: 0 auto; }
@@ -53,6 +53,54 @@
     .btn2.mini { min-width: 40px; min-height: 40px; }
     .row .acts { gap: 6px; }
   }
+
+  /* ---- stats: visits bar chart + per-track download table ----
+     Sharp corners throughout (no border-radius) to match the site's pixel-art
+     language — the dataviz "rounded data-end" default is swapped for this
+     design system's blocky edges. Single-series bars: one color (gold) for
+     every day, amber only marks "today" (a status-like distinction — in
+     progress vs settled — never a value-ramp keyed to the bar's own height). */
+  .vwrap { position: relative; margin: 10px 0 6px; }
+  .vchart {
+    display: grid;
+    grid-template-columns: repeat(30, 1fr);
+    align-items: end;
+    gap: 2px;
+    height: 64px;
+    border-bottom: 2px solid var(--z-border);
+  }
+  /* past days sit dim (muted) so the one bar that matters — today, still
+     counting — reads instantly brighter, rather than fading into the row */
+  .vchart .bar { background: var(--z-muted); min-height: 3px; cursor: url('/assets/img/cursor-pointer.png') 1 1, pointer; }
+  .vchart .bar:hover, .vchart .bar:focus-visible { background: var(--z-gold); outline: none; }
+  .vchart .bar.today { background: var(--z-amber); }
+  .vchart .bar.today:hover, .vchart .bar.today:focus-visible { background: var(--z-foam); }
+  .vchart-tip {
+    position: absolute; z-index: 3;
+    transform: translate(-50%, calc(-100% - 8px));
+    padding: 4px 7px;
+    background: #000;
+    border: 2px solid var(--z-gold);
+    box-shadow: 3px 3px 0 #000;
+    font-family: var(--font-pixel);
+    font-size: 8px;
+    color: var(--z-text-2);
+    white-space: nowrap;
+    pointer-events: none;
+    display: none;
+  }
+  .vchart-tip b { color: var(--z-amber); }
+  .vchart-tip.show { display: block; }
+
+  .dl-table { border: 2px solid var(--z-border); background: #000; max-height: 320px; overflow-y: auto; }
+  .dl-row { position: relative; display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-bottom: 1px solid var(--z-border); overflow: hidden; }
+  .dl-row:last-child { border-bottom: 0; }
+  .dl-row .fill { position: absolute; top: 0; bottom: 0; left: 0; background: rgba(212,168,67,0.18); z-index: 0; }
+  .dl-row .ttl, .dl-row .cnt { position: relative; z-index: 1; }
+  .dl-row .ttl { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 18px; color: var(--z-text-2); }
+  .dl-row .cnt { flex: 0 0 auto; font-family: var(--font-pixel); font-size: 10px; color: var(--z-amber); font-variant-numeric: tabular-nums; min-width: 30px; text-align: right; }
+  .dl-empty { padding: 14px 10px; font-family: var(--font-pixel); font-size: 9px; color: var(--z-muted); }
+  .stats-refresh { position: relative; z-index: 1; margin-left: auto; background: none; border: 0; padding: 0 2px; color: var(--z-amber); font-family: var(--font-pixel); font-size: 12px; cursor: url('/assets/img/cursor-pointer.png') 1 1, pointer; }
 </style>
 </head>
 <body class="crt">
@@ -110,9 +158,26 @@
         <p class="hint">radio &amp; texts apply on the site as the wiring lands — playlist is already live.</p>
       </div>
     </div>
+
+    <div class="win">
+      <div class="win-bar"><b>stats</b><button class="stats-refresh" id="statsRefresh" title="Refresh stats" type="button">↻</button></div>
+      <div class="win-body">
+        <h2 class="sec" style="margin-top:0">visits — last 30 days</h2>
+        <p class="hint" id="visitsSummary">loading…</p>
+        <div class="vwrap">
+          <div class="vchart" id="vchart" role="img" aria-label="Daily unique visitors, last 30 days"></div>
+          <div class="vchart-tip" id="vtip"></div>
+        </div>
+        <p class="hint">unique visitors per day, deduped by IP — not raw pageviews</p>
+
+        <h2 class="sec" style="margin-top:22px">downloads by track</h2>
+        <p class="hint" id="dlSummary">loading…</p>
+        <div class="dl-table" id="dlTable"></div>
+      </div>
+    </div>
   </div>
 
 </div>
-<script src="/admin/admin.js?v=3"></script>
+<script src="/admin/admin.js?v=4"></script>
 </body>
 </html>

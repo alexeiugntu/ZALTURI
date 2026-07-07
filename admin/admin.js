@@ -6,6 +6,7 @@
   var pw = sessionStorage.getItem("zalturiAdminPw") || "";
   var files = [];
   var cfg = { tracks: [], radio: {}, content: {} };
+  var stats = { days: [], visits: {}, downloads: {} };
 
   function $(id) { return document.getElementById(id); }
   function status(msg, kind) { var s = $("status"); s.textContent = msg || ""; s.className = kind || ""; }
@@ -42,10 +43,28 @@
       cfg.radio = cfg.radio || {}; cfg.content = cfg.content || {};
     });
   }
+  function loadStats() {
+    return fetch(API + "/admin/stats", { headers: auth() })
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (j) {
+        stats.days = Array.isArray(j.days) ? j.days : [];
+        stats.visits = j.visits || {};
+        stats.downloads = j.downloads || {};
+      });
+  }
   function loadAll() {
     status("loading…");
-    Promise.all([loadConfig(), loadFiles()]).then(function () {
-      renderPlaylist(); renderRadio(); renderTexts(); status("loaded", "ok");
+    var core = Promise.all([loadConfig(), loadFiles()]).then(function () {
+      renderPlaylist(); renderRadio(); renderTexts();
+    });
+    // stats are supplementary — a failed/slow stats fetch must not block the
+    // rest of the panel (playlist editing works even if analytics don't load)
+    var statsReady = loadStats().catch(function () {
+      stats = { days: [], visits: {}, downloads: {} };
+    });
+    Promise.all([core, statsReady]).then(function () {
+      renderStats();
+      status("loaded", "ok");
     }).catch(function () { status("load failed — re-login?", "err"); });
   }
 
@@ -147,6 +166,80 @@
     $("c_hero1").value = c.heroLead1 || ""; $("c_hero2").value = c.heroLead2 || "";
     $("c_ltitle").value = c.listenTitle || ""; $("c_lintro").value = c.listenIntro || ""; $("c_sc").value = c.soundcloudUrl || "";
   }
+
+  /* ---- stats: 30-day visits bar chart + per-track download table ---- */
+  function fmtDay(d) {
+    var dt = new Date(d + "T00:00:00Z");
+    return dt.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+  }
+  function renderVisits() {
+    var el = $("vchart"), tip = $("vtip"); if (!el || !tip) return;
+    el.innerHTML = "";
+    var days = stats.days;
+    var vals = days.map(function (d) { return stats.visits[d] || 0; });
+    var max = Math.max(1, vals.reduce(function (a, b) { return Math.max(a, b); }, 0));
+    var total = vals.reduce(function (a, b) { return a + b; }, 0);
+    var todayIdx = days.length - 1;
+    days.forEach(function (d, i) {
+      var v = vals[i];
+      var bar = document.createElement("div");
+      bar.className = "bar" + (i === todayIdx ? " today" : "");
+      bar.style.height = Math.max(3, Math.round((v / max) * 100)) + "%";
+      bar.tabIndex = 0;
+      var label = fmtDay(d) + (i === todayIdx ? " (today)" : "") + ": " + v + (v === 1 ? " visitor" : " visitors");
+      bar.setAttribute("aria-label", label);
+      function show() {
+        tip.innerHTML = "";
+        var strong = document.createElement("b"); strong.textContent = v + (v === 1 ? " visitor" : " visitors");
+        tip.appendChild(strong);
+        tip.appendChild(document.createTextNode(" · " + fmtDay(d) + (i === todayIdx ? " (today)" : "")));
+        var r = bar.getBoundingClientRect(), pr = el.getBoundingClientRect();
+        tip.style.left = (r.left - pr.left + r.width / 2) + "px";
+        tip.style.top = "0px";
+        tip.classList.add("show");
+      }
+      function hide() { tip.classList.remove("show"); }
+      bar.addEventListener("pointerenter", show);
+      bar.addEventListener("pointerleave", hide);
+      bar.addEventListener("focus", show);
+      bar.addEventListener("blur", hide);
+      el.appendChild(bar);
+    });
+    var vs = $("visitsSummary");
+    if (vs) vs.textContent = days.length ? (total + " unique " + (total === 1 ? "visitor" : "visitors") + " over the last " + days.length + " days") : "no data yet";
+  }
+  function renderDownloads() {
+    var el = $("dlTable"); if (!el) return;
+    el.innerHTML = "";
+    var rows = cfg.tracks.map(function (t) { return { title: t.title || t.file, n: stats.downloads[t.file] || 0 }; });
+    var ds = $("dlSummary");
+    if (!rows.length) {
+      el.innerHTML = '<div class="dl-empty">no tracks yet</div>';
+      if (ds) ds.textContent = "no tracks yet";
+      return;
+    }
+    rows.sort(function (a, b) { return b.n - a.n; });
+    var max = Math.max(1, rows.reduce(function (m, r) { return Math.max(m, r.n); }, 0));
+    rows.forEach(function (r) {
+      var row = document.createElement("div");
+      row.className = "dl-row";
+      var fill = document.createElement("span"); fill.className = "fill"; fill.style.width = Math.round((r.n / max) * 100) + "%";
+      var ttl = document.createElement("span"); ttl.className = "ttl"; ttl.textContent = r.title;
+      var cnt = document.createElement("span"); cnt.className = "cnt"; cnt.textContent = r.n;
+      row.appendChild(fill); row.appendChild(ttl); row.appendChild(cnt);
+      el.appendChild(row);
+    });
+    var total = rows.reduce(function (a, r) { return a + r.n; }, 0);
+    if (ds) ds.textContent = total + " total download" + (total === 1 ? "" : "s") + " across " + rows.length + " track" + (rows.length === 1 ? "" : "s");
+  }
+  function renderStats() { renderVisits(); renderDownloads(); }
+  var statsRefreshBtn = $("statsRefresh");
+  if (statsRefreshBtn) statsRefreshBtn.onclick = function () {
+    $("visitsSummary").textContent = "refreshing…"; $("dlSummary").textContent = "refreshing…";
+    loadStats().then(renderStats).catch(function () {
+      $("visitsSummary").textContent = "refresh failed"; $("dlSummary").textContent = "refresh failed";
+    });
+  };
 
   /* ---- save ---- */
   $("saveBtn").onclick = function () {

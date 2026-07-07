@@ -7,11 +7,18 @@
   "use strict";
 
   var STREAM_URL = "https://stream-286.surfernetwork.com/1t7w7w8r7whvv";
-  var CSS_URL = "/assets/css/base.css?v=20260701q";
+  var CSS_URL = "/assets/css/base.css?v=20260701r";
   var STATION = "ZALTURI PIRATE STATION";
   var child = window.top !== window;
 
   if (child) {
+    // count this pageview once — from the visible (iframe) copy of the page.
+    // the pre-shell top-level copy of this same page is destroyed by
+    // shell.mount() before it ever renders, so firing only here (never in the
+    // non-child branch below) avoids double-counting the very first load.
+    try {
+      fetch("https://zalturi-admin.zalturi.workers.dev/hit", { method: "POST", keepalive: true }).catch(function () {});
+    } catch (e) {}
     document.addEventListener("click", function (event) {
       var trigger = event.target.closest && event.target.closest("[data-radio-open]");
       if (!trigger) return;

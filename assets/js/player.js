@@ -274,6 +274,12 @@
   /* ------------------------------------------------------------ download */
   function download(i) {
     var t = TRACKS[i], u = fileURL(t);
+    try {
+      fetch("https://zalturi-admin.zalturi.workers.dev/hit-download", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ file: t.file }), keepalive: true
+      }).catch(function () {});
+    } catch (e) {}
     fetch(u, { mode: "cors" })
       .then(function (r) { if (!r.ok) throw 0; return r.blob(); })
       .then(function (b) {
